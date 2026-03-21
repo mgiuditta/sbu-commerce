@@ -1,0 +1,23 @@
+{
+  "name": "@sbu/cli",
+  "version": "0.0.1",
+  "description": "CLI tool for codegen and management",
+  "bin": {
+    "sbu": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@sbu/codegen": "workspace:*",
+    "typeorm": "^0.3.20",
+    "pg": "^8.13.0",
+    "reflect-metadata": "^0.2.2",
+    "tsx": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}

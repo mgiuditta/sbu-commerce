@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "@sbu/types": ["./packages/types/src"],
+      "@sbu/types/*": ["./packages/types/src/*"],
+      "@sbu/ui": ["./packages/ui/src"],
+      "@sbu/ui/*": ["./packages/ui/src/*"],
+      "@sbu/config": ["./packages/config/src"],
+      "@sbu/config/*": ["./packages/config/src/*"],
+      "@sbu/cli": ["./packages/sbu-cli/src"],
+      "@sbu/cli/*": ["./packages/sbu-cli/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next", ".turbo"]
+}

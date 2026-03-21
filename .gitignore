@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Turbo
+.turbo/
+
+# TypeScript
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# MinIO data
+minio-data/
+
+# PostgreSQL data
+pgdata/
+
+# Redis data
+redis-data/
+
+# Docker volumes
+docker-volumes/
+
+# Temporary files
+tmp/
+temp/
+
+# Auto-generated code (sbu generate)
+packages/types/src/generated/

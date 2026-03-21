@@ -1,0 +1,6 @@
+{
+  "name": "commerce",
+  "version": "0.0.1",
+  "description": "Cart, Checkout, Pricing extensions",
+  "dependencies": ["core"]
+}

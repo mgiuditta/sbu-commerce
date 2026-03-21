@@ -1,0 +1,6 @@
+{
+  "name": "catalog-service",
+  "version": "0.0.1",
+  "description": "Catalog microservice - Products, Categories, CatalogVersion",
+  "dependencies": []
+}

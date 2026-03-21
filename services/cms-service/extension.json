@@ -1,0 +1,6 @@
+{
+  "name": "cms-service",
+  "version": "0.0.1",
+  "description": "CMS microservice - Payload CMS pages, blocks, media",
+  "dependencies": []
+}

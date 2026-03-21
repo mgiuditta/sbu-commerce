@@ -1,0 +1,6 @@
+{
+  "name": "core",
+  "version": "0.0.1",
+  "description": "Core types: GenericItem, Media, Language, Currency",
+  "dependencies": []
+}

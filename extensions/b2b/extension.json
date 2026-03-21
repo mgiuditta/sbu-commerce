@@ -1,0 +1,6 @@
+{
+  "name": "b2b",
+  "version": "0.0.1",
+  "description": "B2B extension (optional per tenant)",
+  "dependencies": ["core", "commerce"]
+}

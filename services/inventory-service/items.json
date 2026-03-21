@@ -1,0 +1,7 @@
+{
+  "$schema": "https://sbu.io/items-schema/v1",
+  "extension": "inventory",
+  "enumtypes": [],
+  "itemtypes": [],
+  "relations": []
+}

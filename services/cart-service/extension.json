@@ -1,0 +1,6 @@
+{
+  "name": "cart-service",
+  "version": "0.0.1",
+  "description": "Cart microservice - Shopping cart, sessions, applied promotions",
+  "dependencies": []
+}

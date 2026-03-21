@@ -1,0 +1,95 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: sbu-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: sbu
+      POSTGRES_PASSWORD: sbu_secret
+      POSTGRES_DB: sbu_main
+      POSTGRES_MULTIPLE_DATABASES: sbu_catalog,sbu_orders,sbu_cart,sbu_pricing,sbu_inventory,sbu_auth,sbu_cms,sbu_hotfolder
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./tools/docker/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sbu']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2-alpine
+    container_name: sbu-nats
+    restart: unless-stopped
+    ports:
+      - '4222:4222'
+      - '8222:8222'
+    command: ['--jetstream', '--store_dir', '/data', '--http_port', '8222']
+    volumes:
+      - nats-data:/data
+    healthcheck:
+      test: ['CMD', 'nats-server', '--signal', 'ldm']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: sbu-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.13
+    container_name: sbu-meilisearch
+    restart: unless-stopped
+    ports:
+      - '7700:7700'
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: sbu_meili_master_key
+      MEILI_NO_ANALYTICS: 'true'
+    volumes:
+      - meili-data:/meili_data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7700/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: sbu-minio
+    restart: unless-stopped
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: sbu_minio
+      MINIO_ROOT_PASSWORD: sbu_minio_secret
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  nats-data:
+  redis-data:
+  meili-data:
+  minio-data:

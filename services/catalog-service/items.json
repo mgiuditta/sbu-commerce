@@ -1,0 +1,69 @@
+{
+  "$schema": "https://sbu.io/items-schema/v1",
+  "extension": "catalog",
+  "enumtypes": [
+    {
+      "code": "ProductStatus",
+      "values": ["ACTIVE", "INACTIVE", "DISCONTINUED"]
+    },
+    {
+      "code": "ApprovalStatus",
+      "values": ["PENDING", "APPROVED", "REJECTED"]
+    }
+  ],
+  "itemtypes": [
+    {
+      "code": "CatalogVersion",
+      "extends": "GenericItem",
+      "table": "catalog_versions",
+      "attributes": [
+        { "name": "version", "type": "string", "unique": true, "required": true },
+        { "name": "active", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "code": "Category",
+      "extends": "GenericItem",
+      "table": "categories",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "order", "type": "integer" }
+      ]
+    },
+    {
+      "code": "Product",
+      "extends": "GenericItem",
+      "table": "products",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "status", "type": "ProductStatus", "default": "ACTIVE" },
+        { "name": "approvalStatus", "type": "ApprovalStatus", "default": "PENDING" },
+        { "name": "price", "type": "decimal" },
+        { "name": "ean", "type": "string" },
+        { "name": "manufacturerName", "type": "string" },
+        { "name": "summary", "type": "text" }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "code": "Product2Category",
+      "source": { "type": "Product", "cardinality": "many" },
+      "target": { "type": "Category", "cardinality": "many" }
+    },
+    {
+      "code": "Product2CatalogVersion",
+      "source": { "type": "Product", "cardinality": "many" },
+      "target": { "type": "CatalogVersion", "cardinality": "one" }
+    },
+    {
+      "code": "Category2CatalogVersion",
+      "source": { "type": "Category", "cardinality": "many" },
+      "target": { "type": "CatalogVersion", "cardinality": "one" }
+    }
+  ]
+}

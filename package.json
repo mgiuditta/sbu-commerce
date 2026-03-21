@@ -1,0 +1,29 @@
+{
+  "name": "sbu-commerce",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "description": "Enterprise commerce platform — NestJS microservices + Next.js",
+  "license": "BUSL-1.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "generate": "tsx packages/sbu-cli/src/index.ts generate",
+    "db:sync": "tsx packages/sbu-cli/src/index.ts db:sync"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "tsx": "^4.0.0",
+    "turbo": "^2.4.4",
+    "typescript": "^5.8.2"
+  }
+}

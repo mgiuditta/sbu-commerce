@@ -1,0 +1,6 @@
+{
+  "name": "hotfolder",
+  "version": "0.0.1",
+  "description": "Hot Folder processors",
+  "dependencies": ["core"]
+}

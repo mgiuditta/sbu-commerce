@@ -1,0 +1,6 @@
+{
+  "name": "pricing-service",
+  "version": "0.0.1",
+  "description": "Pricing microservice - Price lists, pricing rules, discounts",
+  "dependencies": []
+}

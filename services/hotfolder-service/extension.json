@@ -1,0 +1,6 @@
+{
+  "name": "hotfolder-service",
+  "version": "0.0.1",
+  "description": "Hotfolder microservice - Job queue, import logs, file archive",
+  "dependencies": []
+}
