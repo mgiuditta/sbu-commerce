@@ -1,0 +1,7 @@
+{
+  "name": "catalog",
+  "version": "0.0.1",
+  "description": "Product, Category, CatalogVersion types",
+  "dependencies": ["core"],
+  "targetService": "catalog-service"
+}

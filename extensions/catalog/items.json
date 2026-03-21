@@ -1,5 +1,5 @@
 {
-  "$schema": "https://sbu.io/items-schema/v1",
+  "$schema": "../../packages/config/items-schema.json",
   "extension": "catalog",
   "enumtypes": [
     {

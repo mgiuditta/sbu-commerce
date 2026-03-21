@@ -75,8 +75,9 @@
         },
         "extends": {
           "type": "string",
-          "description": "Tipo base da estendere (es. GenericItem)",
-          "pattern": "^[A-Z][a-zA-Z0-9]*$"
+          "description": "Tipo base da estendere. Default: GenericItem",
+          "pattern": "^[A-Z][a-zA-Z0-9]*$",
+          "default": "GenericItem"
         },
         "table": {
           "type": "string",
@@ -104,7 +105,26 @@
         },
         "type": {
           "type": "string",
-          "description": "Tipo dell'attributo: primitivo (string, text, integer, decimal, boolean, datetime), speciale (LocalizedString, Media, collection, map), enum definito in enumtypes, o riferimento a un altro itemtype"
+          "description": "Tipo dell'attributo: primitivo (string, text, integer, decimal, boolean, datetime), speciale (LocalizedString, Media, collection, map), enum definito in enumtypes, o riferimento a un altro itemtype",
+          "anyOf": [
+            {
+              "enum": [
+                "string",
+                "text",
+                "integer",
+                "decimal",
+                "boolean",
+                "datetime",
+                "LocalizedString",
+                "Media",
+                "collection",
+                "map"
+              ]
+            },
+            {
+              "pattern": "^[A-Z][a-zA-Z0-9]*$"
+            }
+          ]
         },
         "unique": {
           "type": "boolean",

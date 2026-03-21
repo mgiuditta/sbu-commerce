@@ -1,7 +1,29 @@
 {
-  "$schema": "https://sbu.io/items-schema/v1",
+  "$schema": "../../packages/config/items-schema.json",
   "extension": "core",
   "enumtypes": [],
-  "itemtypes": [],
+  "itemtypes": [
+    {
+      "code": "GenericItem",
+      "attributes": [
+        {
+          "name": "pK",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "required": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "required": false
+        }
+      ],
+      "table": "generic_items"
+    }
+  ],
   "relations": []
 }

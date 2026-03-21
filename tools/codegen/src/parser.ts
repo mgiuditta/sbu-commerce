@@ -10,14 +10,18 @@ import type {
 } from './types.js';
 
 /**
- * Discover and parse all items.json files from services/, extensions/, and custom/ directories.
- * Order matters: services first, then extensions (platform), then custom (business).
+ * Discover and parse all items.json files from extensions/ and custom/ directories.
+ * Type definitions belong to extensions, not services. The codegen uses the
+ * `targetService` field in extension.json to redirect generated output to the
+ * appropriate service directory.
+ *
+ * Order: platform extensions first, then custom (business).
  * This ensures custom itemtypeExtensions can reference platform types.
  */
 export function discoverItemsJsonFiles(rootDir: string): ParsedSource[] {
   const sources: ParsedSource[] = [];
 
-  const scanDir = (parentDir: string, sourceType: 'service' | 'extension' | 'custom') => {
+  const scanDir = (parentDir: string, sourceType: 'extension' | 'custom') => {
     if (!existsSync(parentDir)) return;
 
     const entries = readdirSync(parentDir, { withFileTypes: true });
@@ -44,8 +48,7 @@ export function discoverItemsJsonFiles(rootDir: string): ParsedSource[] {
     }
   };
 
-  // Order: services → platform extensions → custom extensions
-  scanDir(join(rootDir, 'services'), 'service');
+  // Order: platform extensions → custom extensions
   scanDir(join(rootDir, 'extensions'), 'extension');
   scanDir(join(rootDir, 'custom'), 'custom');
 

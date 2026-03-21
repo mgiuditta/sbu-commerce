@@ -110,7 +110,7 @@ function createExtension(rootDir: string, name: string, target: string): void {
     join(extDir, 'items.json'),
     JSON.stringify(
       {
-        $schema: 'https://sbu.io/items-schema/v1',
+        $schema: '../../packages/config/items-schema.json',
         extension: name,
         enumtypes: [],
         itemtypes: [],

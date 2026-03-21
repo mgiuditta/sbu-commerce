@@ -2,7 +2,7 @@
  * Codegen entry point — reads items.json and generates TypeORM entities,
  * domain models, mappers, DTOs, enums, and shared type interfaces.
  */
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type {
   GenerateOptions,
@@ -35,17 +35,17 @@ import {
  * Main generate function. Scans items.json files, builds registry, generates code.
  */
 export async function generate(options: GenerateOptions): Promise<void> {
-  const { rootDir, services } = options;
+  const { rootDir, extensions } = options;
 
   console.log(`[sbu-codegen] Scanning items.json files in ${rootDir}...`);
 
-  // 1. Discover and parse all items.json files
+  // 1. Discover and parse all items.json files from extensions/
   const sources = discoverItemsJsonFiles(rootDir);
   console.log(`[sbu-codegen] Found ${sources.length} items.json files.`);
 
-  // Filter by services if specified
-  const filteredSources = services
-    ? sources.filter((s) => services.includes(s.dirName))
+  // Filter by extension names if specified
+  const filteredSources = extensions
+    ? sources.filter((s) => extensions.includes(s.dirName))
     : sources;
 
   // 2. Build unified type registry (from ALL sources, for cross-reference resolution)
@@ -72,7 +72,7 @@ export async function generate(options: GenerateOptions): Promise<void> {
   const allFiles: GeneratedFile[] = [];
 
   for (const source of sourcesWithContent) {
-    const files = generateForSource(source, registry);
+    const files = generateForSource(source, registry, rootDir);
     allFiles.push(...files);
   }
 
@@ -92,18 +92,26 @@ export async function generate(options: GenerateOptions): Promise<void> {
 }
 
 /**
- * Generate all files for a single source (service or extension).
+ * Generate all files for a single extension source.
+ * If the extension declares a `targetService` in extension.json,
+ * generated code is placed into the corresponding service directory.
+ * Otherwise it is generated into the extension directory itself.
  */
 function generateForSource(
   source: ParsedSource,
   registry: TypeRegistry,
+  rootDir: string,
 ): GeneratedFile[] {
   const files: GeneratedFile[] = [];
-  const baseDir = source.dirPath;
+  const baseDir = resolveBaseDir(source.dirPath, rootDir);
   const { schema } = source;
 
   const enumDefs = schema.enumtypes ?? [];
-  const itemtypes = schema.itemtypes ?? [];
+  const itemtypes = (schema.itemtypes ?? []).map((it) => ({
+    ...it,
+    extends:
+      it.extends ?? (it.code === 'GenericItem' ? undefined : 'GenericItem'),
+  }));
   const hasGenericItemExtender = itemtypes.some(
     (it) => it.extends === 'GenericItem',
   );
@@ -311,6 +319,22 @@ function generateSharedTypes(
   });
 
   return files;
+}
+
+/**
+ * Resolve the base directory for code generation.
+ * If the extension declares a `targetService` in extension.json,
+ * output goes to `services/<targetService>/`. Otherwise stays in the extension dir.
+ */
+function resolveBaseDir(extensionDir: string, rootDir: string): string {
+  const extensionJsonPath = join(extensionDir, 'extension.json');
+  if (existsSync(extensionJsonPath)) {
+    const meta = JSON.parse(readFileSync(extensionJsonPath, 'utf-8'));
+    if (meta.targetService) {
+      return join(rootDir, 'services', meta.targetService);
+    }
+  }
+  return extensionDir;
 }
 
 /**

@@ -59,20 +59,21 @@ export interface TypeRegistry {
   enums: Map<string, EnumTypeDefinition>;
   itemtypes: Map<string, ItemTypeDefinition>;
   relations: RelationDefinition[];
-  /** Maps itemtype code to the extension (service/extension) that owns it */
+  /** Maps itemtype code to the extension that owns it */
   ownership: Map<string, string>;
 }
 
 export interface GenerateOptions {
   rootDir: string;
-  services?: string[];
+  /** Filter by extension directory names (e.g. ["catalog", "core"]) */
+  extensions?: string[];
 }
 
 export interface ParsedSource {
   filePath: string;
   dirPath: string;
   dirName: string;
-  sourceType: 'service' | 'extension' | 'custom';
+  sourceType: 'extension' | 'custom';
   schema: ItemsJsonSchema;
 }
 

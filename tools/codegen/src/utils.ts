@@ -93,6 +93,12 @@ const BUILTIN_TYPE_MAP: Record<string, TypeMapping> = {
     columnOptions: {},
     validatorDecorators: ['@IsDate()'],
   },
+  DateTime: {
+    tsType: 'Date',
+    columnType: `'timestamp'`,
+    columnOptions: {},
+    validatorDecorators: ['@IsDate()'],
+  },
   LocalizedString: {
     tsType: 'Record<string, string>',
     columnType: `'jsonb'`,
@@ -112,7 +118,7 @@ const BUILTIN_TYPE_MAP: Record<string, TypeMapping> = {
     validatorDecorators: ['@IsArray()'],
   },
   map: {
-    tsType: 'Record<string, any>',
+    tsType: 'Record<string, unknown>',
     columnType: `'jsonb'`,
     columnOptions: {},
     validatorDecorators: ['@IsObject()'],
@@ -153,13 +159,11 @@ export function resolveType(
     };
   }
 
-  // Fallback: treat as jsonb
-  return {
-    tsType: 'any',
-    columnType: `'jsonb'`,
-    columnOptions: {},
-    validatorDecorators: ['@IsOptional()'],
-  };
+  // Unknown type — fail loud, never generate `any`
+  throw new Error(
+    `[sbu-codegen] Unknown type "${typeName}". ` +
+    `Add it to BUILTIN_TYPE_MAP, enumtypes, or itemtypes in items.json.`,
+  );
 }
 
 /**
