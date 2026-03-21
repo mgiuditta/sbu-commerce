@@ -1,0 +1,165 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sbu.io/items-schema/v1",
+  "title": "SBU Items Definition",
+  "description": "Schema dichiarativo per il type system SBU Commerce",
+  "type": "object",
+  "required": ["extension"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Riferimento allo schema JSON"
+    },
+    "extension": {
+      "type": "string",
+      "description": "Nome dell'extension/microservizio proprietario (kebab-case)",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "enumtypes": {
+      "type": "array",
+      "description": "Definizioni di tipi enumerativi",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EnumType"
+      }
+    },
+    "itemtypes": {
+      "type": "array",
+      "description": "Definizioni di item types (entità di dominio)",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ItemType"
+      }
+    },
+    "relations": {
+      "type": "array",
+      "description": "Definizioni di relazioni tra item types",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Relation"
+      }
+    }
+  },
+  "$defs": {
+    "EnumType": {
+      "type": "object",
+      "required": ["code", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Nome del tipo enum (PascalCase)",
+          "pattern": "^[A-Z][a-zA-Z0-9]*$"
+        },
+        "values": {
+          "type": "array",
+          "description": "Valori ammessi dell'enum",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "ItemType": {
+      "type": "object",
+      "required": ["code", "table", "attributes"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Nome del tipo (PascalCase)",
+          "pattern": "^[A-Z][a-zA-Z0-9]*$"
+        },
+        "extends": {
+          "type": "string",
+          "description": "Tipo base da estendere (es. GenericItem)",
+          "pattern": "^[A-Z][a-zA-Z0-9]*$"
+        },
+        "table": {
+          "type": "string",
+          "description": "Nome tabella PostgreSQL (snake_case)",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "attributes": {
+          "type": "array",
+          "description": "Attributi dell'item type",
+          "items": {
+            "$ref": "#/$defs/Attribute"
+          }
+        }
+      }
+    },
+    "Attribute": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nome attributo (camelCase)",
+          "pattern": "^[a-z][a-zA-Z0-9]*$"
+        },
+        "type": {
+          "type": "string",
+          "description": "Tipo dell'attributo: primitivo (string, text, integer, decimal, boolean, datetime), speciale (LocalizedString, Media, collection, map), enum definito in enumtypes, o riferimento a un altro itemtype"
+        },
+        "unique": {
+          "type": "boolean",
+          "description": "Vincolo UNIQUE sulla colonna",
+          "default": false
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Vincolo NOT NULL sulla colonna",
+          "default": false
+        },
+        "default": {
+          "description": "Valore di default per la colonna"
+        },
+        "relation": {
+          "type": "string",
+          "description": "Tipo di relazione inline (alternativa a relations[])",
+          "enum": ["one-to-one", "many-to-one", "one-to-many", "many-to-many"]
+        }
+      }
+    },
+    "Relation": {
+      "type": "object",
+      "required": ["code", "source", "target"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Codice relazione (PascalCase, convenzione Source2Target)",
+          "pattern": "^[A-Z][a-zA-Z0-9]*$"
+        },
+        "source": {
+          "$ref": "#/$defs/RelationEnd"
+        },
+        "target": {
+          "$ref": "#/$defs/RelationEnd"
+        }
+      }
+    },
+    "RelationEnd": {
+      "type": "object",
+      "required": ["type", "cardinality"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Riferimento all'itemtype (PascalCase)",
+          "pattern": "^[A-Z][a-zA-Z0-9]*$"
+        },
+        "cardinality": {
+          "type": "string",
+          "description": "Cardinalità della relazione",
+          "enum": ["one", "many"]
+        }
+      }
+    }
+  }
+}

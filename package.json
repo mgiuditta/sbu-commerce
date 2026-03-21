@@ -15,8 +15,9 @@
     "test": "turbo run test",
     "clean": "turbo run clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
-    "generate": "tsx packages/sbu-cli/src/index.ts generate",
-    "db:sync": "tsx packages/sbu-cli/src/index.ts db:sync"
+    "sbu": "sbu",
+    "generate": "sbu generate",
+    "db:sync": "sbu db:sync"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
