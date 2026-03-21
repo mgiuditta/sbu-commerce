@@ -70,7 +70,11 @@ export function generateMapper(
   for (const attr of itemtype.attributes) {
     const mapping = resolveType(attr.type, enumCodes, itemtypeCodes);
     if (mapping.isRelation) continue;
-    lines.push(`    entity.${attr.name} = domain.${attr.name};`);
+    if (attr.required) {
+      lines.push(`    entity.${attr.name} = domain.${attr.name};`);
+    } else {
+      lines.push(`    if (domain.${attr.name} !== undefined) entity.${attr.name} = domain.${attr.name};`);
+    }
   }
 
   lines.push(`    return entity;`);

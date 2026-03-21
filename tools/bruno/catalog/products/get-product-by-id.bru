@@ -1,0 +1,25 @@
+meta {
+  name: Get Product by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/products/{{productId}}
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  productId: f902d60e-eb16-4fa2-b7b2-33d3b7849164
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("should return product", function() {
+    expect(res.getBody().id).to.equal(bru.getVar("productId"));
+  });
+}

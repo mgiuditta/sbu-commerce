@@ -1,0 +1,25 @@
+meta {
+  name: Get All Products
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/products
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3001
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("should return array", function() {
+    expect(res.getBody()).to.be.an('array');
+  });
+}
