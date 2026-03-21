@@ -23,6 +23,54 @@
         }
       ],
       "table": "generic_items"
+    },
+    {
+      "code": "Media",
+      "attributes": [
+        {
+          "name": "url",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "altText",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "table": "media"
+    },
+    {
+      "code": "Language",
+      "attributes": [
+        {
+          "name": "code",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "table": "languages"
+    },
+    {
+      "code": "Currency",
+      "attributes": [
+        {
+          "name": "code",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "symbol",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "table": "currencies"
     }
   ],
   "relations": []
