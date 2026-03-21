@@ -73,7 +73,7 @@ function createExtension(rootDir: string, name: string, target: string): void {
     join(extDir, 'src', 'domain', 'ports', 'outbound'),
     join(extDir, 'src', 'domain', 'services'),
     join(extDir, 'src', 'adapters', 'inbound', 'rest', 'dto'),
-    join(extDir, 'src', 'adapters', 'inbound', 'nats'),
+    join(extDir, 'src', 'adapters', 'inbound', 'messaging'),
     join(extDir, 'src', 'adapters', 'outbound', 'persistence'),
     join(extDir, 'src', 'adapters', 'outbound', 'messaging'),
     join(extDir, 'src', 'hooks'),
@@ -216,7 +216,7 @@ export class ${pascalName}Extension {
   console.log('  ├── src/');
   console.log('  │   ├── index.ts       NestJS module');
   console.log('  │   ├── domain/        Domain models, ports, services');
-  console.log('  │   ├── adapters/      REST/NATS inbound, persistence outbound');
+  console.log('  │   ├── adapters/      REST/RMQ inbound, persistence outbound');
   console.log('  │   ├── hooks/         Override platform behavior');
   console.log('  │   └── infrastructure/');
   console.log('  ├── frontend/          Next.js components');

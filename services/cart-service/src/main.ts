@@ -7,10 +7,11 @@ async function bootstrap() {
   const app = await NestFactory.create(CartModule);
 
   app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.NATS,
+    transport: Transport.RMQ,
     options: {
-      servers: [process.env.NATS_URL || 'nats://localhost:4222'],
+      urls: [process.env.RABBITMQ_URL || 'amqp://sbu:sbu_secret@localhost:5672'],
       queue: 'cart_queue',
+      queueOptions: { durable: true },
     },
   });
 

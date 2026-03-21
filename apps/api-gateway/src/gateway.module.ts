@@ -7,50 +7,56 @@ import { HealthController } from './health/health.controller.js';
     ClientsModule.register([
       {
         name: 'CATALOG_SERVICE',
-        transport: Transport.NATS,
+        transport: Transport.RMQ,
         options: {
-          servers: [process.env.NATS_URL ?? 'nats://nats:4222'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://sbu:sbu_secret@localhost:5672'],
           queue: 'catalog_queue',
+          queueOptions: { durable: true },
         },
       },
       {
         name: 'ORDER_SERVICE',
-        transport: Transport.NATS,
+        transport: Transport.RMQ,
         options: {
-          servers: [process.env.NATS_URL ?? 'nats://nats:4222'],
-          queue: 'order_queue',
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://sbu:sbu_secret@localhost:5672'],
+          queue: 'orders_queue',
+          queueOptions: { durable: true },
         },
       },
       {
         name: 'CART_SERVICE',
-        transport: Transport.NATS,
+        transport: Transport.RMQ,
         options: {
-          servers: [process.env.NATS_URL ?? 'nats://nats:4222'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://sbu:sbu_secret@localhost:5672'],
           queue: 'cart_queue',
+          queueOptions: { durable: true },
         },
       },
       {
         name: 'PRICING_SERVICE',
-        transport: Transport.NATS,
+        transport: Transport.RMQ,
         options: {
-          servers: [process.env.NATS_URL ?? 'nats://nats:4222'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://sbu:sbu_secret@localhost:5672'],
           queue: 'pricing_queue',
+          queueOptions: { durable: true },
         },
       },
       {
         name: 'INVENTORY_SERVICE',
-        transport: Transport.NATS,
+        transport: Transport.RMQ,
         options: {
-          servers: [process.env.NATS_URL ?? 'nats://nats:4222'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://sbu:sbu_secret@localhost:5672'],
           queue: 'inventory_queue',
+          queueOptions: { durable: true },
         },
       },
       {
         name: 'AUTH_SERVICE',
-        transport: Transport.NATS,
+        transport: Transport.RMQ,
         options: {
-          servers: [process.env.NATS_URL ?? 'nats://nats:4222'],
+          urls: [process.env.RABBITMQ_URL ?? 'amqp://sbu:sbu_secret@localhost:5672'],
           queue: 'auth_queue',
+          queueOptions: { durable: true },
         },
       },
     ]),
