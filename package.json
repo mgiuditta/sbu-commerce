@@ -17,6 +17,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
     "sbu": "sbu",
     "generate": "sbu generate",
+    "regenerate": "sbu regenerate",
     "db:sync": "sbu db:sync"
   },
   "devDependencies": {

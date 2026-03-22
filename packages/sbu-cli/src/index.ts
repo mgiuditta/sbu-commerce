@@ -14,6 +14,14 @@ async function main() {
       break;
     }
 
+    case 'regenerate': {
+      const { cleanGenerated, generate } = await import('@sbu/codegen');
+      const rootDir = resolve(process.cwd());
+      await cleanGenerated({ rootDir });
+      await generate({ rootDir });
+      break;
+    }
+
     case 'db:sync': {
       const { dbSync } = await import('./db-sync.js');
       const rootDir = resolve(process.cwd());
@@ -47,6 +55,7 @@ async function main() {
       console.log('');
       console.log('Commands:');
       console.log('  generate                            Generate code from items.json');
+      console.log('  regenerate                          Clean all generated files and regenerate');
       console.log('  db:sync [service...]                Generate + sync all DBs (or specific ones)');
       console.log('  extension:create <name> [target]    Create a new extension');
       console.log('');

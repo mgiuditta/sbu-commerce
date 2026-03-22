@@ -2,7 +2,7 @@
  * Codegen entry point — reads items.json and generates TypeORM entities,
  * domain models, mappers, DTOs, enums, and shared type interfaces.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type {
   GenerateOptions,
@@ -30,6 +30,97 @@ import {
   generateTypeInterface,
   generateTypesBarrel,
 } from './generators/index.js';
+
+/**
+ * Directories (relative to a service/extension base dir) that contain generated files.
+ * Each directory uses a .gitignore that ignores everything except itself.
+ */
+const GENERATED_DIRS = [
+  join('src', 'domain', 'models'),
+  join('src', 'infrastructure', 'typeorm'),
+  join('src', 'adapters', 'outbound', 'persistence'),
+  join('src', 'adapters', 'inbound', 'rest', 'dto'),
+];
+
+/**
+ * Remove all generated files from services, extensions, and packages/types/src/generated.
+ */
+export async function cleanGenerated(options: GenerateOptions): Promise<void> {
+  const { rootDir } = options;
+
+  console.log('[sbu-codegen] Cleaning generated files...');
+
+  const sources = discoverItemsJsonFiles(rootDir);
+  let removed = 0;
+
+  // Collect unique base dirs (extensions may target the same service)
+  const baseDirs = new Set<string>();
+  for (const source of sources) {
+    baseDirs.add(resolveBaseDir(source.dirPath, rootDir));
+  }
+
+  for (const baseDir of baseDirs) {
+    for (const relDir of GENERATED_DIRS) {
+      const dir = join(baseDir, relDir);
+      removed += cleanDir(dir);
+    }
+  }
+
+  // Clean shared types
+  const sharedDir = join(rootDir, 'packages', 'types', 'src', 'generated');
+  removed += cleanDir(sharedDir);
+
+  console.log(`[sbu-codegen] Removed ${removed} generated files.`);
+}
+
+const AUTO_GENERATED_MARKER = '// AUTO-GENERATED';
+
+/**
+ * Remove only files with the AUTO-GENERATED marker in a directory.
+ * Subdirectories whose contents are entirely generated (e.g. enums/) are removed recursively.
+ * Hand-written files (adapters, etc.) are preserved.
+ * Returns the number of files/dirs removed.
+ */
+function cleanDir(dir: string): number {
+  if (!existsSync(dir)) return 0;
+
+  let count = 0;
+  const entries = readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    if (entry.name === '.gitignore' || entry.name === '.gitkeep') continue;
+
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      // Recurse into subdirectories (e.g. enums/)
+      count += cleanDir(fullPath);
+    } else {
+      // Only delete files that start with the auto-generated marker
+      const head = readHead(fullPath, 64);
+      if (head !== null && head.includes(AUTO_GENERATED_MARKER)) {
+        rmSync(fullPath, { force: true });
+        count++;
+      }
+    }
+  }
+
+  return count;
+}
+
+/**
+ * Read the first N bytes of a file. Returns null if the file cannot be read.
+ */
+function readHead(filePath: string, bytes: number): string | null {
+  try {
+    const fd = openSync(filePath, 'r');
+    const buf = Buffer.alloc(bytes);
+    const bytesRead = readSync(fd, buf, 0, bytes, 0);
+    closeSync(fd);
+    return buf.toString('utf-8', 0, bytesRead);
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Main generate function. Scans items.json files, builds registry, generates code.
