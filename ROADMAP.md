@@ -6,33 +6,23 @@ Il progetto è in fase iniziale. Solo il catalog-service ha implementazione real
 
 ---
 
-## Fase 1 — Fondamenta (estensioni core + codegen)
+## Fase 1 — Fondamenta (estensioni core + codegen) ✅ COMPLETATA
 
 **Obiettivo:** Avere il type system funzionante come source of truth.
 
-### 1.1 Extension `core` — items.json con tipi base
-- `GenericItem` (base per tutti i tipi)
-- `Media` (url, mimeType, size, altText)
-- `Language` (isoCode, name, active)
-- `Currency` (isoCode, symbol, name, digits)
-- `Country` (isoCode, name)
-- `Unit` (code, name, unitType)
+### 1.1 Extension `core` — items.json con tipi base ✅
+- `GenericItem`, `Media`, `MediaFolder`, `MediaContainer`, `Language`, `Currency`, `Country`, `Region`, `Zone`, `Title`, `Unit`
 
-### 1.2 Extension `commerce` — items.json con tipi commerce
-- `Cart`, `CartEntry`
-- `Order`, `OrderEntry`, `OrderStatus` (enum)
-- `PriceRow`, `Discount`, `Tax`
-- `PaymentMode`, `DeliveryMode`
-- `Address` (shipping/billing)
+### 1.2 Extension `commerce` — items.json con tipi commerce ✅
+- `Cart`, `CartEntry`, `Order`, `OrderEntry`, `Customer`, `Address`, `Payment`, `Shipping`, `Tax`, `Discount`, `Promotion`, `Voucher`
 
-### 1.3 Extension `b2b`
-- `B2BUnit`, `B2BCustomer`, `B2BBudget`
-- `CostCenter`, `PurchaseOrderApproval`
+### 1.3 Extension `b2b` ✅
+- `B2BUnit`, `B2BCustomer`, `B2BBudget`, `CostCenter`, `B2BPermission`, `PurchaseOrderApproval`, `ApprovalProcess`, `B2BQuote`, `B2BQuoteEntry`
 
-### 1.4 Validare il codegen
-- Popolare tutti gli items.json
-- Eseguire `pnpm run generate`
-- Verificare che genera domain models, entities, DTOs, mappers corretti per tutti i servizi
+### 1.4 Codegen validato ✅
+- `tools/codegen/` con parser + generators (enum, domain model, typeorm entity, mapper, dto, type interface)
+- 54 file generati in `packages/types/src/generated/`
+- Domain models, entities, DTOs, mappers generati per tutti i servizi
 
 ---
 
@@ -49,16 +39,16 @@ Il progetto è in fase iniziale. Solo il catalog-service ha implementazione real
 
 ---
 
-## Fase 3 — Catalog Service (completare)
+## Fase 3 — Catalog Service (completare) ✅ COMPLETATA
 
 **Obiettivo:** Servizio catalogo completo, non solo Product.
 
-- Completare Category CRUD (ports, service, adapter, controller)
-- Completare CatalogVersion CRUD
-- Relazioni: Product ↔ Category (many-to-many), Product/Category ↔ CatalogVersion
-- Staging/Online versioning (draft → publish)
-- Ricerca prodotti via Meilisearch (sync automatico)
-- Import bulk via RabbitMQ (riceve da hotfolder-service)
+- ✅ Category CRUD completo (ports, service, adapter, controller)
+- ✅ CatalogVersion CRUD completo (ports, service, adapter, controller)
+- ✅ Relazioni: Product ↔ Category (many-to-many), Product/Category ↔ CatalogVersion (many-to-one)
+- Staging/Online versioning (draft → publish) — da approfondire
+- Ricerca prodotti via Meilisearch (sync automatico) — da implementare
+- Import bulk via RabbitMQ (riceve da hotfolder-service) — da implementare
 
 ---
 
