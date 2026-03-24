@@ -1,0 +1,35 @@
+meta {
+  name: Create Catalog Version
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/catalog-versions
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "version": "Staged",
+    "active": false
+  }
+}
+
+tests {
+  test("should return 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("should return catalog version with id", function() {
+    expect(res.getBody().id).to.be.a('string');
+    expect(res.getBody().version).to.equal("Staged");
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("catalogVersionId", res.getBody().id);
+  }
+}

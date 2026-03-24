@@ -1,0 +1,27 @@
+meta {
+  name: Update Catalog Version
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/catalog-versions/{{catalogVersionId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "active": true
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return updated active status", function() {
+    expect(res.getBody().active).to.equal(true);
+  });
+}

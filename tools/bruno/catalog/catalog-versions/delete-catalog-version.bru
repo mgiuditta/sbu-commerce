@@ -1,0 +1,17 @@
+meta {
+  name: Delete Catalog Version
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/catalog-versions/{{catalogVersionId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("should return 204", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

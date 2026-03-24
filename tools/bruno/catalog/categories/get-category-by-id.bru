@@ -1,0 +1,21 @@
+meta {
+  name: Get Category by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/categories/{{categoryId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return category", function() {
+    expect(res.getBody().id).to.equal(bru.getVar("categoryId"));
+  });
+}

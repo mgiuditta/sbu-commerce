@@ -1,0 +1,43 @@
+meta {
+  name: Create Category
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/categories
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "code": "CAT-ELECTRONICS",
+    "name": {
+      "en": "Electronics",
+      "it": "Elettronica"
+    },
+    "description": {
+      "en": "Electronic devices and accessories",
+      "it": "Dispositivi elettronici e accessori"
+    },
+    "order": 1
+  }
+}
+
+tests {
+  test("should return 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("should return category with id", function() {
+    expect(res.getBody().id).to.be.a('string');
+    expect(res.getBody().code).to.equal("CAT-ELECTRONICS");
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("categoryId", res.getBody().id);
+  }
+}

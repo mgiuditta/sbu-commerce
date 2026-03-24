@@ -1,0 +1,31 @@
+meta {
+  name: Update Category
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/categories/{{categoryId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": {
+      "en": "Electronics & Gadgets",
+      "it": "Elettronica & Gadget"
+    },
+    "order": 2
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return updated name", function() {
+    expect(res.getBody().name.en).to.equal("Electronics & Gadgets");
+  });
+}
