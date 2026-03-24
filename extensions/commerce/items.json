@@ -1,7 +1,669 @@
 {
   "$schema": "../../packages/config/items-schema.json",
   "extension": "commerce",
-  "enumtypes": [],
-  "itemtypes": [],
-  "relations": []
+  "enumtypes": [
+    {
+      "code": "OrderStatus",
+      "values": [
+        "CREATED",
+        "PAYMENT_PENDING",
+        "PAYMENT_AUTHORIZED",
+        "PAYMENT_CAPTURED",
+        "FRAUD_CHECK",
+        "PROCESSING",
+        "WAIT_FRAUD_MANUAL_CHECK",
+        "PARTIALLY_SHIPPED",
+        "SHIPPED",
+        "DELIVERED",
+        "PICKUP_COMPLETE",
+        "COMPLETED",
+        "CANCELLED",
+        "CANCELLING",
+        "RETURN_REQUESTED",
+        "RETURN_APPROVED",
+        "RETURNED",
+        "REFUNDED",
+        "ON_HOLD",
+        "ERROR"
+      ]
+    },
+    {
+      "code": "CartStatus",
+      "values": ["ACTIVE", "MERGED", "ORDERED", "EXPIRED", "ANONYMOUS"]
+    },
+    {
+      "code": "DiscountType",
+      "values": ["PERCENTAGE", "ABSOLUTE", "FIXED_PRICE", "BUY_X_GET_Y", "MULTIBUY"]
+    },
+    {
+      "code": "TaxCalculationType",
+      "values": ["PERCENTAGE", "ABSOLUTE"]
+    },
+    {
+      "code": "PaymentTransactionType",
+      "values": ["AUTHORIZATION", "CAPTURE", "REFUND", "CANCEL", "PARTIAL_CAPTURE", "PARTIAL_REFUND"]
+    },
+    {
+      "code": "PaymentTransactionStatus",
+      "values": ["PENDING", "SUCCESS", "FAILED", "ERROR", "REVIEW"]
+    },
+    {
+      "code": "ConsignmentStatus",
+      "values": ["READY", "WAITING", "PICKPACK", "SHIPPED", "DELIVERED", "CANCELLED", "PICKUP_COMPLETE"]
+    },
+    {
+      "code": "ReturnStatus",
+      "values": ["REQUESTED", "APPROVED", "RECEIVED", "REFUNDED", "CANCELLED"]
+    },
+    {
+      "code": "StockLevelStatus",
+      "values": ["IN_STOCK", "LOW_STOCK", "OUT_OF_STOCK", "FORCE_IN_STOCK"]
+    },
+    {
+      "code": "AddressType",
+      "values": ["SHIPPING", "BILLING", "BOTH"]
+    },
+    {
+      "code": "DeliveryModeType",
+      "values": ["STANDARD", "EXPRESS", "NEXT_DAY", "SAME_DAY", "PICKUP", "DIGITAL"]
+    },
+    {
+      "code": "PaymentModeType",
+      "values": ["CREDIT_CARD", "DEBIT_CARD", "PAYPAL", "BANK_TRANSFER", "INVOICE", "CASH_ON_DELIVERY", "VOUCHER", "APPLE_PAY", "GOOGLE_PAY"]
+    },
+    {
+      "code": "PromotionType",
+      "values": ["ORDER_PROMOTION", "PRODUCT_PROMOTION", "SHIPPING_PROMOTION", "BUNDLE_PROMOTION"]
+    },
+    {
+      "code": "VoucherType",
+      "values": ["SINGLE_CODE", "MULTI_CODE", "PROMOTIONAL"]
+    }
+  ],
+  "itemtypes": [
+    {
+      "code": "Address",
+      "extends": "GenericItem",
+      "table": "addresses",
+      "attributes": [
+        { "name": "title", "type": "string" },
+        { "name": "firstName", "type": "string", "required": true },
+        { "name": "lastName", "type": "string", "required": true },
+        { "name": "company", "type": "string" },
+        { "name": "line1", "type": "string", "required": true },
+        { "name": "line2", "type": "string" },
+        { "name": "city", "type": "string", "required": true },
+        { "name": "postalCode", "type": "string", "required": true },
+        { "name": "region", "type": "Region", "relation": "many-to-one" },
+        { "name": "country", "type": "Country", "relation": "many-to-one", "required": true },
+        { "name": "phone", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "addressType", "type": "AddressType", "default": "SHIPPING" },
+        { "name": "defaultAddress", "type": "boolean", "default": false },
+        { "name": "vatId", "type": "string" },
+        { "name": "district", "type": "string" },
+        { "name": "building", "type": "string" },
+        { "name": "apartment", "type": "string" },
+        { "name": "latitude", "type": "decimal" },
+        { "name": "longitude", "type": "decimal" }
+      ]
+    },
+    {
+      "code": "Customer",
+      "extends": "GenericItem",
+      "table": "customers",
+      "attributes": [
+        { "name": "uid", "type": "string", "unique": true, "required": true },
+        { "name": "email", "type": "string", "unique": true, "required": true },
+        { "name": "firstName", "type": "string", "required": true },
+        { "name": "lastName", "type": "string", "required": true },
+        { "name": "title", "type": "Title", "relation": "many-to-one" },
+        { "name": "defaultShippingAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "defaultBillingAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "defaultPaymentInfo", "type": "PaymentInfo", "relation": "many-to-one" },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one" },
+        { "name": "language", "type": "Language", "relation": "many-to-one" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "phone", "type": "string" },
+        { "name": "dateOfBirth", "type": "datetime" },
+        { "name": "newsletterOptIn", "type": "boolean", "default": false },
+        { "name": "loyaltyPoints", "type": "integer", "default": 0 }
+      ]
+    },
+    {
+      "code": "CustomerGroup",
+      "extends": "GenericItem",
+      "table": "customer_groups",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" }
+      ]
+    },
+    {
+      "code": "Cart",
+      "extends": "GenericItem",
+      "table": "carts",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "customer", "type": "Customer", "relation": "many-to-one" },
+        { "name": "status", "type": "CartStatus", "default": "ACTIVE" },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "totalPrice", "type": "decimal", "default": 0 },
+        { "name": "subtotal", "type": "decimal", "default": 0 },
+        { "name": "totalTax", "type": "decimal", "default": 0 },
+        { "name": "totalDiscounts", "type": "decimal", "default": 0 },
+        { "name": "deliveryCost", "type": "decimal", "default": 0 },
+        { "name": "deliveryAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "paymentAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "deliveryMode", "type": "DeliveryMode", "relation": "many-to-one" },
+        { "name": "paymentMode", "type": "PaymentMode", "relation": "many-to-one" },
+        { "name": "paymentInfo", "type": "PaymentInfo", "relation": "many-to-one" },
+        { "name": "sessionId", "type": "string" },
+        { "name": "site", "type": "string" },
+        { "name": "store", "type": "string" },
+        { "name": "guid", "type": "string", "unique": true },
+        { "name": "expiresAt", "type": "datetime" },
+        { "name": "calculatedAt", "type": "datetime" }
+      ]
+    },
+    {
+      "code": "CartEntry",
+      "extends": "GenericItem",
+      "table": "cart_entries",
+      "attributes": [
+        { "name": "entryNumber", "type": "integer", "required": true },
+        { "name": "cart", "type": "Cart", "relation": "many-to-one", "required": true },
+        { "name": "product", "type": "string", "required": true },
+        { "name": "quantity", "type": "integer", "required": true, "default": 1 },
+        { "name": "basePrice", "type": "decimal", "required": true },
+        { "name": "totalPrice", "type": "decimal", "required": true },
+        { "name": "discountAmount", "type": "decimal", "default": 0 },
+        { "name": "taxAmount", "type": "decimal", "default": 0 },
+        { "name": "unit", "type": "Unit", "relation": "many-to-one" },
+        { "name": "deliveryPointOfService", "type": "string" },
+        { "name": "giveAway", "type": "boolean", "default": false },
+        { "name": "rejected", "type": "boolean", "default": false },
+        { "name": "info", "type": "map" }
+      ]
+    },
+    {
+      "code": "Order",
+      "extends": "GenericItem",
+      "table": "orders",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "customer", "type": "Customer", "relation": "many-to-one", "required": true },
+        { "name": "status", "type": "OrderStatus", "default": "CREATED", "required": true },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "totalPrice", "type": "decimal", "required": true },
+        { "name": "subtotal", "type": "decimal", "required": true },
+        { "name": "totalTax", "type": "decimal", "default": 0 },
+        { "name": "totalDiscounts", "type": "decimal", "default": 0 },
+        { "name": "deliveryCost", "type": "decimal", "default": 0 },
+        { "name": "deliveryAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "paymentAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "deliveryMode", "type": "DeliveryMode", "relation": "many-to-one" },
+        { "name": "paymentMode", "type": "PaymentMode", "relation": "many-to-one" },
+        { "name": "paymentInfo", "type": "PaymentInfo", "relation": "many-to-one" },
+        { "name": "site", "type": "string" },
+        { "name": "store", "type": "string" },
+        { "name": "placedAt", "type": "datetime" },
+        { "name": "externalOrderId", "type": "string" },
+        { "name": "notes", "type": "text" },
+        { "name": "locale", "type": "string" },
+        { "name": "guid", "type": "string", "unique": true }
+      ]
+    },
+    {
+      "code": "OrderEntry",
+      "extends": "GenericItem",
+      "table": "order_entries",
+      "attributes": [
+        { "name": "entryNumber", "type": "integer", "required": true },
+        { "name": "order", "type": "Order", "relation": "many-to-one", "required": true },
+        { "name": "product", "type": "string", "required": true },
+        { "name": "quantity", "type": "integer", "required": true },
+        { "name": "basePrice", "type": "decimal", "required": true },
+        { "name": "totalPrice", "type": "decimal", "required": true },
+        { "name": "discountAmount", "type": "decimal", "default": 0 },
+        { "name": "taxAmount", "type": "decimal", "default": 0 },
+        { "name": "unit", "type": "Unit", "relation": "many-to-one" },
+        { "name": "deliveryPointOfService", "type": "string" },
+        { "name": "giveAway", "type": "boolean", "default": false },
+        { "name": "rejected", "type": "boolean", "default": false },
+        { "name": "info", "type": "map" }
+      ]
+    },
+    {
+      "code": "OrderHistoryEntry",
+      "extends": "GenericItem",
+      "table": "order_history_entries",
+      "attributes": [
+        { "name": "order", "type": "Order", "relation": "many-to-one", "required": true },
+        { "name": "previousStatus", "type": "OrderStatus" },
+        { "name": "status", "type": "OrderStatus", "required": true },
+        { "name": "description", "type": "string" },
+        { "name": "timestamp", "type": "datetime", "required": true }
+      ]
+    },
+    {
+      "code": "Consignment",
+      "extends": "GenericItem",
+      "table": "consignments",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "order", "type": "Order", "relation": "many-to-one", "required": true },
+        { "name": "status", "type": "ConsignmentStatus", "default": "READY" },
+        { "name": "shippingAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "deliveryMode", "type": "DeliveryMode", "relation": "many-to-one" },
+        { "name": "trackingId", "type": "string" },
+        { "name": "carrier", "type": "string" },
+        { "name": "shippedAt", "type": "datetime" },
+        { "name": "deliveredAt", "type": "datetime" },
+        { "name": "warehouse", "type": "Warehouse", "relation": "many-to-one" }
+      ]
+    },
+    {
+      "code": "ConsignmentEntry",
+      "extends": "GenericItem",
+      "table": "consignment_entries",
+      "attributes": [
+        { "name": "consignment", "type": "Consignment", "relation": "many-to-one", "required": true },
+        { "name": "orderEntry", "type": "OrderEntry", "relation": "many-to-one", "required": true },
+        { "name": "quantity", "type": "integer", "required": true },
+        { "name": "shippedQuantity", "type": "integer", "default": 0 }
+      ]
+    },
+    {
+      "code": "ReturnRequest",
+      "extends": "GenericItem",
+      "table": "return_requests",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "order", "type": "Order", "relation": "many-to-one", "required": true },
+        { "name": "status", "type": "ReturnStatus", "default": "REQUESTED" },
+        { "name": "reason", "type": "text" },
+        { "name": "refundAmount", "type": "decimal" },
+        { "name": "requestedAt", "type": "datetime" },
+        { "name": "completedAt", "type": "datetime" }
+      ]
+    },
+    {
+      "code": "ReturnEntry",
+      "extends": "GenericItem",
+      "table": "return_entries",
+      "attributes": [
+        { "name": "returnRequest", "type": "ReturnRequest", "relation": "many-to-one", "required": true },
+        { "name": "orderEntry", "type": "OrderEntry", "relation": "many-to-one", "required": true },
+        { "name": "quantity", "type": "integer", "required": true },
+        { "name": "reason", "type": "text" },
+        { "name": "refundAmount", "type": "decimal" }
+      ]
+    },
+    {
+      "code": "PriceRow",
+      "extends": "GenericItem",
+      "table": "price_rows",
+      "attributes": [
+        { "name": "product", "type": "string", "required": true },
+        { "name": "price", "type": "decimal", "required": true },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "unit", "type": "Unit", "relation": "many-to-one" },
+        { "name": "minQuantity", "type": "integer", "default": 1 },
+        { "name": "startDate", "type": "datetime" },
+        { "name": "endDate", "type": "datetime" },
+        { "name": "channel", "type": "string" },
+        { "name": "net", "type": "boolean", "default": true },
+        { "name": "customerGroup", "type": "CustomerGroup", "relation": "many-to-one" },
+        { "name": "priority", "type": "integer", "default": 0 }
+      ]
+    },
+    {
+      "code": "Discount",
+      "extends": "GenericItem",
+      "table": "discounts",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "discountType", "type": "DiscountType", "required": true },
+        { "name": "value", "type": "decimal", "required": true },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one" },
+        { "name": "priority", "type": "integer", "default": 0 },
+        { "name": "startDate", "type": "datetime" },
+        { "name": "endDate", "type": "datetime" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "maxUsages", "type": "integer" },
+        { "name": "currentUsages", "type": "integer", "default": 0 }
+      ]
+    },
+    {
+      "code": "Promotion",
+      "extends": "GenericItem",
+      "table": "promotions",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "promotionType", "type": "PromotionType", "required": true },
+        { "name": "priority", "type": "integer", "default": 0 },
+        { "name": "startDate", "type": "datetime" },
+        { "name": "endDate", "type": "datetime" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "conditions", "type": "map" },
+        { "name": "actions", "type": "map" },
+        { "name": "maxUsages", "type": "integer" },
+        { "name": "maxUsagesPerCustomer", "type": "integer" },
+        { "name": "exclusive", "type": "boolean", "default": false },
+        { "name": "fired", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "code": "PromotionResult",
+      "extends": "GenericItem",
+      "table": "promotion_results",
+      "attributes": [
+        { "name": "promotion", "type": "Promotion", "relation": "many-to-one", "required": true },
+        { "name": "order", "type": "Order", "relation": "many-to-one" },
+        { "name": "cart", "type": "Cart", "relation": "many-to-one" },
+        { "name": "discountAmount", "type": "decimal" },
+        { "name": "appliedAt", "type": "datetime" },
+        { "name": "message", "type": "LocalizedString" }
+      ]
+    },
+    {
+      "code": "Voucher",
+      "extends": "GenericItem",
+      "table": "vouchers",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "voucherType", "type": "VoucherType", "required": true },
+        { "name": "discountType", "type": "DiscountType", "required": true },
+        { "name": "value", "type": "decimal", "required": true },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one" },
+        { "name": "startDate", "type": "datetime" },
+        { "name": "endDate", "type": "datetime" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "maxRedemptions", "type": "integer" },
+        { "name": "currentRedemptions", "type": "integer", "default": 0 },
+        { "name": "minOrderValue", "type": "decimal" },
+        { "name": "freeShipping", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "code": "VoucherRedemption",
+      "extends": "GenericItem",
+      "table": "voucher_redemptions",
+      "attributes": [
+        { "name": "voucher", "type": "Voucher", "relation": "many-to-one", "required": true },
+        { "name": "customer", "type": "Customer", "relation": "many-to-one" },
+        { "name": "order", "type": "Order", "relation": "many-to-one" },
+        { "name": "redeemedAt", "type": "datetime", "required": true }
+      ]
+    },
+    {
+      "code": "Tax",
+      "extends": "GenericItem",
+      "table": "taxes",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "calculationType", "type": "TaxCalculationType", "default": "PERCENTAGE" },
+        { "name": "value", "type": "decimal", "required": true },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one" },
+        { "name": "country", "type": "Country", "relation": "many-to-one" },
+        { "name": "region", "type": "Region", "relation": "many-to-one" },
+        { "name": "active", "type": "boolean", "default": true }
+      ]
+    },
+    {
+      "code": "TaxRow",
+      "extends": "GenericItem",
+      "table": "tax_rows",
+      "attributes": [
+        { "name": "product", "type": "string", "required": true },
+        { "name": "tax", "type": "Tax", "relation": "many-to-one", "required": true },
+        { "name": "startDate", "type": "datetime" },
+        { "name": "endDate", "type": "datetime" },
+        { "name": "catalogVersion", "type": "string" }
+      ]
+    },
+    {
+      "code": "PaymentMode",
+      "extends": "GenericItem",
+      "table": "payment_modes",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "paymentModeType", "type": "PaymentModeType", "required": true },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "paymentProvider", "type": "string" },
+        { "name": "sortOrder", "type": "integer", "default": 0 }
+      ]
+    },
+    {
+      "code": "PaymentInfo",
+      "extends": "GenericItem",
+      "table": "payment_infos",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "customer", "type": "Customer", "relation": "many-to-one", "required": true },
+        { "name": "paymentMode", "type": "PaymentMode", "relation": "many-to-one", "required": true },
+        { "name": "billingAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "cardType", "type": "string" },
+        { "name": "cardNumber", "type": "string" },
+        { "name": "cardHolder", "type": "string" },
+        { "name": "expiryMonth", "type": "integer" },
+        { "name": "expiryYear", "type": "integer" },
+        { "name": "subscriptionId", "type": "string" },
+        { "name": "saved", "type": "boolean", "default": false },
+        { "name": "defaultPayment", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "code": "PaymentTransaction",
+      "extends": "GenericItem",
+      "table": "payment_transactions",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "order", "type": "Order", "relation": "many-to-one", "required": true },
+        { "name": "paymentInfo", "type": "PaymentInfo", "relation": "many-to-one" },
+        { "name": "transactionType", "type": "PaymentTransactionType", "required": true },
+        { "name": "status", "type": "PaymentTransactionStatus", "default": "PENDING" },
+        { "name": "amount", "type": "decimal", "required": true },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "providerTransactionId", "type": "string" },
+        { "name": "providerResponse", "type": "map" },
+        { "name": "requestId", "type": "string" },
+        { "name": "processedAt", "type": "datetime" }
+      ]
+    },
+    {
+      "code": "DeliveryMode",
+      "extends": "GenericItem",
+      "table": "delivery_modes",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "deliveryModeType", "type": "DeliveryModeType", "default": "STANDARD" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "sortOrder", "type": "integer", "default": 0 }
+      ]
+    },
+    {
+      "code": "DeliveryCost",
+      "extends": "GenericItem",
+      "table": "delivery_costs",
+      "attributes": [
+        { "name": "deliveryMode", "type": "DeliveryMode", "relation": "many-to-one", "required": true },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "cost", "type": "decimal", "required": true },
+        { "name": "minOrderValue", "type": "decimal" },
+        { "name": "maxOrderValue", "type": "decimal" },
+        { "name": "zone", "type": "Zone", "relation": "many-to-one" },
+        { "name": "freeAbove", "type": "decimal" }
+      ]
+    },
+    {
+      "code": "Warehouse",
+      "extends": "GenericItem",
+      "table": "warehouses",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "address", "type": "Address", "relation": "many-to-one" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "priority", "type": "integer", "default": 0 },
+        { "name": "default", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "code": "StockLevel",
+      "extends": "GenericItem",
+      "table": "stock_levels",
+      "attributes": [
+        { "name": "product", "type": "string", "required": true },
+        { "name": "warehouse", "type": "Warehouse", "relation": "many-to-one", "required": true },
+        { "name": "available", "type": "integer", "required": true, "default": 0 },
+        { "name": "reserved", "type": "integer", "default": 0 },
+        { "name": "overselling", "type": "integer", "default": 0 },
+        { "name": "status", "type": "StockLevelStatus", "default": "IN_STOCK" },
+        { "name": "lowStockThreshold", "type": "integer", "default": 10 },
+        { "name": "maxStockLevelOverride", "type": "integer" },
+        { "name": "nextDeliveryDate", "type": "datetime" }
+      ]
+    },
+    {
+      "code": "StockReservation",
+      "extends": "GenericItem",
+      "table": "stock_reservations",
+      "attributes": [
+        { "name": "stockLevel", "type": "StockLevel", "relation": "many-to-one", "required": true },
+        { "name": "order", "type": "Order", "relation": "many-to-one" },
+        { "name": "cart", "type": "Cart", "relation": "many-to-one" },
+        { "name": "quantity", "type": "integer", "required": true },
+        { "name": "expiresAt", "type": "datetime" },
+        { "name": "confirmed", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "code": "PointOfService",
+      "extends": "GenericItem",
+      "table": "points_of_service",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "address", "type": "Address", "relation": "many-to-one" },
+        { "name": "warehouse", "type": "Warehouse", "relation": "many-to-one" },
+        { "name": "latitude", "type": "decimal" },
+        { "name": "longitude", "type": "decimal" },
+        { "name": "openingHours", "type": "map" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "pickupInStore", "type": "boolean", "default": false }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "code": "Customer2Addresses",
+      "source": { "type": "Customer", "cardinality": "one" },
+      "target": { "type": "Address", "cardinality": "many" }
+    },
+    {
+      "code": "Customer2CustomerGroups",
+      "source": { "type": "Customer", "cardinality": "many" },
+      "target": { "type": "CustomerGroup", "cardinality": "many" }
+    },
+    {
+      "code": "Customer2Orders",
+      "source": { "type": "Customer", "cardinality": "one" },
+      "target": { "type": "Order", "cardinality": "many" }
+    },
+    {
+      "code": "Customer2Carts",
+      "source": { "type": "Customer", "cardinality": "one" },
+      "target": { "type": "Cart", "cardinality": "many" }
+    },
+    {
+      "code": "Cart2CartEntries",
+      "source": { "type": "Cart", "cardinality": "one" },
+      "target": { "type": "CartEntry", "cardinality": "many" }
+    },
+    {
+      "code": "Order2OrderEntries",
+      "source": { "type": "Order", "cardinality": "one" },
+      "target": { "type": "OrderEntry", "cardinality": "many" }
+    },
+    {
+      "code": "Order2OrderHistory",
+      "source": { "type": "Order", "cardinality": "one" },
+      "target": { "type": "OrderHistoryEntry", "cardinality": "many" }
+    },
+    {
+      "code": "Order2Consignments",
+      "source": { "type": "Order", "cardinality": "one" },
+      "target": { "type": "Consignment", "cardinality": "many" }
+    },
+    {
+      "code": "Consignment2ConsignmentEntries",
+      "source": { "type": "Consignment", "cardinality": "one" },
+      "target": { "type": "ConsignmentEntry", "cardinality": "many" }
+    },
+    {
+      "code": "Order2ReturnRequests",
+      "source": { "type": "Order", "cardinality": "one" },
+      "target": { "type": "ReturnRequest", "cardinality": "many" }
+    },
+    {
+      "code": "ReturnRequest2ReturnEntries",
+      "source": { "type": "ReturnRequest", "cardinality": "one" },
+      "target": { "type": "ReturnEntry", "cardinality": "many" }
+    },
+    {
+      "code": "Order2PaymentTransactions",
+      "source": { "type": "Order", "cardinality": "one" },
+      "target": { "type": "PaymentTransaction", "cardinality": "many" }
+    },
+    {
+      "code": "Cart2PromotionResults",
+      "source": { "type": "Cart", "cardinality": "one" },
+      "target": { "type": "PromotionResult", "cardinality": "many" }
+    },
+    {
+      "code": "Order2PromotionResults",
+      "source": { "type": "Order", "cardinality": "one" },
+      "target": { "type": "PromotionResult", "cardinality": "many" }
+    },
+    {
+      "code": "DeliveryMode2Zones",
+      "source": { "type": "DeliveryMode", "cardinality": "many" },
+      "target": { "type": "Zone", "cardinality": "many" }
+    },
+    {
+      "code": "PaymentMode2Countries",
+      "source": { "type": "PaymentMode", "cardinality": "many" },
+      "target": { "type": "Country", "cardinality": "many" }
+    },
+    {
+      "code": "Discount2Products",
+      "source": { "type": "Discount", "cardinality": "many" },
+      "target": { "type": "string", "cardinality": "many", "attribute": "applicableProducts" }
+    },
+    {
+      "code": "Warehouse2PointsOfService",
+      "source": { "type": "Warehouse", "cardinality": "one" },
+      "target": { "type": "PointOfService", "cardinality": "many" }
+    },
+    {
+      "code": "Customer2PaymentInfos",
+      "source": { "type": "Customer", "cardinality": "one" },
+      "target": { "type": "PaymentInfo", "cardinality": "many" }
+    }
+  ]
 }

@@ -1,7 +1,255 @@
 {
   "$schema": "../../packages/config/items-schema.json",
   "extension": "b2b",
-  "enumtypes": [],
-  "itemtypes": [],
-  "relations": []
+  "enumtypes": [
+    {
+      "code": "B2BPermissionType",
+      "values": ["ORDER_THRESHOLD", "BUDGET_EXCEEDED", "ORDER_TYPE"]
+    },
+    {
+      "code": "ApprovalDecision",
+      "values": ["PENDING", "APPROVED", "REJECTED"]
+    },
+    {
+      "code": "B2BCustomerStatus",
+      "values": ["ACTIVE", "INACTIVE", "BLOCKED"]
+    },
+    {
+      "code": "BudgetStatus",
+      "values": ["ACTIVE", "EXHAUSTED", "EXPIRED"]
+    },
+    {
+      "code": "QuoteStatus",
+      "values": [
+        "BUYER_DRAFT",
+        "BUYER_SUBMITTED",
+        "SELLER_DRAFT",
+        "SELLER_SUBMITTED",
+        "BUYER_ACCEPTED",
+        "BUYER_REJECTED",
+        "SELLER_APPROVED",
+        "SELLER_REJECTED",
+        "EXPIRED",
+        "CANCELLED",
+        "ORDERED"
+      ]
+    }
+  ],
+  "itemtypes": [
+    {
+      "code": "B2BUnit",
+      "extends": "GenericItem",
+      "table": "b2b_units",
+      "attributes": [
+        { "name": "uid", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "string", "required": true },
+        { "name": "description", "type": "text" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "parentUnit", "type": "B2BUnit", "relation": "many-to-one" },
+        { "name": "contactAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "billingAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "shippingAddress", "type": "Address", "relation": "many-to-one" },
+        { "name": "vatId", "type": "string" },
+        { "name": "dunsId", "type": "string" },
+        { "name": "registrationId", "type": "string" },
+        { "name": "creditLimit", "type": "decimal" },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one" }
+      ]
+    },
+    {
+      "code": "B2BCustomer",
+      "extends": "Customer",
+      "table": "b2b_customers",
+      "attributes": [
+        { "name": "unit", "type": "B2BUnit", "relation": "many-to-one", "required": true },
+        { "name": "status", "type": "B2BCustomerStatus", "default": "ACTIVE" },
+        { "name": "approver", "type": "B2BCustomer", "relation": "many-to-one" },
+        { "name": "defaultCostCenter", "type": "CostCenter", "relation": "many-to-one" },
+        { "name": "orderLimit", "type": "decimal" },
+        { "name": "position", "type": "string" },
+        { "name": "department", "type": "string" }
+      ]
+    },
+    {
+      "code": "B2BBudget",
+      "extends": "GenericItem",
+      "table": "b2b_budgets",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "string", "required": true },
+        { "name": "unit", "type": "B2BUnit", "relation": "many-to-one", "required": true },
+        { "name": "budget", "type": "decimal", "required": true },
+        { "name": "spent", "type": "decimal", "default": 0 },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "startDate", "type": "datetime", "required": true },
+        { "name": "endDate", "type": "datetime", "required": true },
+        { "name": "status", "type": "BudgetStatus", "default": "ACTIVE" },
+        { "name": "active", "type": "boolean", "default": true }
+      ]
+    },
+    {
+      "code": "CostCenter",
+      "extends": "GenericItem",
+      "table": "cost_centers",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "string", "required": true },
+        { "name": "description", "type": "text" },
+        { "name": "unit", "type": "B2BUnit", "relation": "many-to-one", "required": true },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "active", "type": "boolean", "default": true }
+      ]
+    },
+    {
+      "code": "B2BPermission",
+      "extends": "GenericItem",
+      "table": "b2b_permissions",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "string", "required": true },
+        { "name": "permissionType", "type": "B2BPermissionType", "required": true },
+        { "name": "unit", "type": "B2BUnit", "relation": "many-to-one", "required": true },
+        { "name": "threshold", "type": "decimal" },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one" },
+        { "name": "periodRange", "type": "string" },
+        { "name": "active", "type": "boolean", "default": true }
+      ]
+    },
+    {
+      "code": "PurchaseOrderApproval",
+      "extends": "GenericItem",
+      "table": "purchase_order_approvals",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "order", "type": "Order", "relation": "many-to-one", "required": true },
+        { "name": "approver", "type": "B2BCustomer", "relation": "many-to-one", "required": true },
+        { "name": "decision", "type": "ApprovalDecision", "default": "PENDING" },
+        { "name": "comment", "type": "text" },
+        { "name": "requestedAt", "type": "datetime", "required": true },
+        { "name": "decidedAt", "type": "datetime" },
+        { "name": "permission", "type": "B2BPermission", "relation": "many-to-one" },
+        { "name": "escalated", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "code": "ApprovalProcess",
+      "extends": "GenericItem",
+      "table": "approval_processes",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "string", "required": true },
+        { "name": "description", "type": "text" },
+        { "name": "unit", "type": "B2BUnit", "relation": "many-to-one", "required": true },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "steps", "type": "map" }
+      ]
+    },
+    {
+      "code": "B2BQuote",
+      "extends": "GenericItem",
+      "table": "b2b_quotes",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "text" },
+        { "name": "customer", "type": "B2BCustomer", "relation": "many-to-one", "required": true },
+        { "name": "unit", "type": "B2BUnit", "relation": "many-to-one", "required": true },
+        { "name": "status", "type": "QuoteStatus", "default": "BUYER_DRAFT" },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "totalPrice", "type": "decimal" },
+        { "name": "discountAmount", "type": "decimal", "default": 0 },
+        { "name": "expirationDate", "type": "datetime" },
+        { "name": "submittedAt", "type": "datetime" },
+        { "name": "assignedSeller", "type": "string" },
+        { "name": "sellerComment", "type": "text" },
+        { "name": "buyerComment", "type": "text" },
+        { "name": "version", "type": "integer", "default": 1 }
+      ]
+    },
+    {
+      "code": "B2BQuoteEntry",
+      "extends": "GenericItem",
+      "table": "b2b_quote_entries",
+      "attributes": [
+        { "name": "quote", "type": "B2BQuote", "relation": "many-to-one", "required": true },
+        { "name": "entryNumber", "type": "integer", "required": true },
+        { "name": "product", "type": "string", "required": true },
+        { "name": "quantity", "type": "integer", "required": true },
+        { "name": "requestedPrice", "type": "decimal" },
+        { "name": "offeredPrice", "type": "decimal" },
+        { "name": "basePrice", "type": "decimal", "required": true },
+        { "name": "totalPrice", "type": "decimal" },
+        { "name": "comment", "type": "text" }
+      ]
+    },
+    {
+      "code": "B2BComment",
+      "extends": "GenericItem",
+      "table": "b2b_comments",
+      "attributes": [
+        { "name": "author", "type": "B2BCustomer", "relation": "many-to-one", "required": true },
+        { "name": "text", "type": "text", "required": true },
+        { "name": "order", "type": "Order", "relation": "many-to-one" },
+        { "name": "quote", "type": "B2BQuote", "relation": "many-to-one" },
+        { "name": "approval", "type": "PurchaseOrderApproval", "relation": "many-to-one" }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "code": "B2BUnit2Children",
+      "source": { "type": "B2BUnit", "cardinality": "one", "attribute": "parentUnit" },
+      "target": { "type": "B2BUnit", "cardinality": "many", "attribute": "children" }
+    },
+    {
+      "code": "B2BUnit2Customers",
+      "source": { "type": "B2BUnit", "cardinality": "one" },
+      "target": { "type": "B2BCustomer", "cardinality": "many" }
+    },
+    {
+      "code": "B2BUnit2Budgets",
+      "source": { "type": "B2BUnit", "cardinality": "one" },
+      "target": { "type": "B2BBudget", "cardinality": "many" }
+    },
+    {
+      "code": "B2BUnit2CostCenters",
+      "source": { "type": "B2BUnit", "cardinality": "one" },
+      "target": { "type": "CostCenter", "cardinality": "many" }
+    },
+    {
+      "code": "B2BUnit2Permissions",
+      "source": { "type": "B2BUnit", "cardinality": "one" },
+      "target": { "type": "B2BPermission", "cardinality": "many" }
+    },
+    {
+      "code": "B2BUnit2Addresses",
+      "source": { "type": "B2BUnit", "cardinality": "many" },
+      "target": { "type": "Address", "cardinality": "many" }
+    },
+    {
+      "code": "CostCenter2Budgets",
+      "source": { "type": "CostCenter", "cardinality": "many" },
+      "target": { "type": "B2BBudget", "cardinality": "many" }
+    },
+    {
+      "code": "B2BCustomer2Permissions",
+      "source": { "type": "B2BCustomer", "cardinality": "many" },
+      "target": { "type": "B2BPermission", "cardinality": "many" }
+    },
+    {
+      "code": "B2BQuote2QuoteEntries",
+      "source": { "type": "B2BQuote", "cardinality": "one" },
+      "target": { "type": "B2BQuoteEntry", "cardinality": "many" }
+    },
+    {
+      "code": "B2BQuote2Comments",
+      "source": { "type": "B2BQuote", "cardinality": "one" },
+      "target": { "type": "B2BComment", "cardinality": "many" }
+    },
+    {
+      "code": "Order2Approvals",
+      "source": { "type": "Order", "cardinality": "one" },
+      "target": { "type": "PurchaseOrderApproval", "cardinality": "many" }
+    }
+  ]
 }

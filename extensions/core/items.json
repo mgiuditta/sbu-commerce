@@ -1,77 +1,158 @@
 {
   "$schema": "../../packages/config/items-schema.json",
   "extension": "core",
-  "enumtypes": [],
+  "enumtypes": [
+    {
+      "code": "MediaFormat",
+      "values": ["IMAGE", "VIDEO", "DOCUMENT", "AUDIO", "ARCHIVE"]
+    },
+    {
+      "code": "UnitType",
+      "values": ["WEIGHT", "LENGTH", "VOLUME", "PIECES", "TIME", "AREA"]
+    }
+  ],
   "itemtypes": [
     {
       "code": "GenericItem",
+      "table": "generic_items",
       "attributes": [
-        {
-          "name": "pK",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "updatedAt",
-          "type": "DateTime",
-          "required": false
-        },
-        {
-          "name": "createdAt",
-          "type": "DateTime",
-          "required": false
-        }
-      ],
-      "table": "generic_items"
+        { "name": "pK", "type": "string", "required": true },
+        { "name": "createdAt", "type": "datetime" },
+        { "name": "updatedAt", "type": "datetime" },
+        { "name": "owner", "type": "string" },
+        { "name": "modifiedBy", "type": "string" }
+      ]
     },
     {
       "code": "Media",
+      "extends": "GenericItem",
+      "table": "media",
       "attributes": [
-        {
-          "name": "url",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "altText",
-          "type": "string",
-          "required": false
-        }
-      ],
-      "table": "media"
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "url", "type": "string", "required": true },
+        { "name": "internalUrl", "type": "string" },
+        { "name": "mimeType", "type": "string", "required": true },
+        { "name": "size", "type": "integer" },
+        { "name": "altText", "type": "LocalizedString" },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "format", "type": "MediaFormat", "default": "IMAGE" },
+        { "name": "folder", "type": "MediaFolder", "relation": "many-to-one" },
+        { "name": "originalFileName", "type": "string" },
+        { "name": "hash", "type": "string" }
+      ]
+    },
+    {
+      "code": "MediaFolder",
+      "extends": "GenericItem",
+      "table": "media_folders",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "path", "type": "string", "required": true }
+      ]
+    },
+    {
+      "code": "MediaContainer",
+      "extends": "GenericItem",
+      "table": "media_containers",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString" }
+      ]
     },
     {
       "code": "Language",
+      "extends": "GenericItem",
+      "table": "languages",
       "attributes": [
-        {
-          "name": "code",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "name",
-          "type": "string",
-          "required": true
-        }
-      ],
-      "table": "languages"
+        { "name": "isoCode", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "nativeName", "type": "string" },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "fallback", "type": "Language", "relation": "many-to-one" }
+      ]
     },
     {
       "code": "Currency",
+      "extends": "GenericItem",
+      "table": "currencies",
       "attributes": [
-        {
-          "name": "code",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "symbol",
-          "type": "string",
-          "required": true
-        }
-      ],
-      "table": "currencies"
+        { "name": "isoCode", "type": "string", "unique": true, "required": true },
+        { "name": "symbol", "type": "string", "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "digits", "type": "integer", "default": 2 },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "conversion", "type": "decimal" },
+        { "name": "base", "type": "boolean", "default": false }
+      ]
+    },
+    {
+      "code": "Country",
+      "extends": "GenericItem",
+      "table": "countries",
+      "attributes": [
+        { "name": "isoCode", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "phoneCode", "type": "string" }
+      ]
+    },
+    {
+      "code": "Region",
+      "extends": "GenericItem",
+      "table": "regions",
+      "attributes": [
+        { "name": "isoCode", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "country", "type": "Country", "relation": "many-to-one", "required": true },
+        { "name": "active", "type": "boolean", "default": true }
+      ]
+    },
+    {
+      "code": "Zone",
+      "extends": "GenericItem",
+      "table": "zones",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true }
+      ]
+    },
+    {
+      "code": "Title",
+      "extends": "GenericItem",
+      "table": "titles",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true }
+      ]
+    },
+    {
+      "code": "Unit",
+      "extends": "GenericItem",
+      "table": "units",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "unitType", "type": "UnitType", "required": true },
+        { "name": "conversion", "type": "decimal", "default": 1.0 }
+      ]
     }
   ],
-  "relations": []
+  "relations": [
+    {
+      "code": "MediaContainer2Media",
+      "source": { "type": "MediaContainer", "cardinality": "one" },
+      "target": { "type": "Media", "cardinality": "many" }
+    },
+    {
+      "code": "MediaFolder2SubFolders",
+      "source": { "type": "MediaFolder", "cardinality": "one", "attribute": "parent" },
+      "target": { "type": "MediaFolder", "cardinality": "many", "attribute": "children" }
+    },
+    {
+      "code": "Zone2Countries",
+      "source": { "type": "Zone", "cardinality": "many" },
+      "target": { "type": "Country", "cardinality": "many" }
+    }
+  ]
 }
