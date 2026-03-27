@@ -1,4 +1,4 @@
-import { PriceList } from '../../models/price-list.model';
+import { PriceList } from '@domain/models/generated/price-list.model';
 
 export const PRICE_LIST_SERVICE_PORT = Symbol('PRICE_LIST_SERVICE_PORT');
 

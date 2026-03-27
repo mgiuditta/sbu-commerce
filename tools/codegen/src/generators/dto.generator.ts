@@ -51,7 +51,7 @@ export function generateDtos(
   if (enumImports.size > 0) {
     const sorted = Array.from(enumImports).sort();
     lines.push(
-      `import { ${sorted.join(', ')} } from '../../../../domain/models/enums';`,
+      `import { ${sorted.join(', ')} } from '../../../../../domain/models/generated/enums';`,
     );
   }
 

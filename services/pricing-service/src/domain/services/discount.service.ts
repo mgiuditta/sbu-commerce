@@ -1,7 +1,7 @@
-import { Discount } from '../models/discount.model';
-import { DiscountServicePort } from '../ports/inbound/discount-service.port';
-import { DiscountRepositoryPort } from '../ports/outbound/discount-repository.port';
-import { EntityNotFoundException } from '../exceptions/entity-not-found.exception';
+import { Discount } from '@domain/models/generated/discount.model';
+import { DiscountServicePort } from '@domain/ports/inbound/discount-service.port';
+import { DiscountRepositoryPort } from '@domain/ports/outbound/discount-repository.port';
+import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';
 
 export class DiscountService implements DiscountServicePort {
   constructor(private readonly discountRepository: DiscountRepositoryPort) {}

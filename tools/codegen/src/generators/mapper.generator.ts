@@ -25,10 +25,10 @@ export function generateMapper(
   const entityFileName = `${toKebabCase(itemtype.code)}.entity`;
 
   lines.push(
-    `import { ${itemtype.code} } from '../../../domain/models/${modelFileName}';`,
+    `import { ${itemtype.code} } from '../../../../domain/models/generated/${modelFileName}';`,
   );
   lines.push(
-    `import { ${itemtype.code}Entity } from '../../../infrastructure/typeorm/${entityFileName}';`,
+    `import { ${itemtype.code}Entity } from '../../../../infrastructure/typeorm/generated/${entityFileName}';`,
   );
   lines.push('');
 

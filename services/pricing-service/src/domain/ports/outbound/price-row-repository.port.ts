@@ -1,4 +1,4 @@
-import { PriceRow } from '../../models/price-row.model';
+import { PriceRow } from '@domain/models/generated/price-row.model';
 
 export const PRICE_ROW_REPOSITORY_PORT = Symbol('PRICE_ROW_REPOSITORY_PORT');
 

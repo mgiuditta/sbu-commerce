@@ -14,8 +14,8 @@ import {
 import {
   PRODUCT_SERVICE_PORT,
   ProductServicePort,
-} from '../../../domain/ports/inbound/product-service.port';
-import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+} from '@domain/ports/inbound/product-service.port';
+import { CreateProductDto, UpdateProductDto } from './dto/generated/product.dto';
 
 @Controller('products')
 export class ProductController {

@@ -1,7 +1,7 @@
-import { Category } from '../models/category.model';
-import { CategoryServicePort } from '../ports/inbound/category-service.port';
-import { CategoryRepositoryPort } from '../ports/outbound/category-repository.port';
-import { EntityNotFoundException } from '../exceptions/entity-not-found.exception';
+import { Category } from '@domain/models/generated/category.model';
+import { CategoryServicePort } from '@domain/ports/inbound/category-service.port';
+import { CategoryRepositoryPort } from '@domain/ports/outbound/category-repository.port';
+import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';
 
 export class CategoryService implements CategoryServicePort {
   constructor(private readonly categoryRepository: CategoryRepositoryPort) {}

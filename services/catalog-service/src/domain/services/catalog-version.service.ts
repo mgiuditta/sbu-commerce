@@ -1,7 +1,7 @@
-import { CatalogVersion } from '../models/catalog-version.model';
-import { CatalogVersionServicePort } from '../ports/inbound/catalog-version-service.port';
-import { CatalogVersionRepositoryPort } from '../ports/outbound/catalog-version-repository.port';
-import { EntityNotFoundException } from '../exceptions/entity-not-found.exception';
+import { CatalogVersion } from '@domain/models/generated/catalog-version.model';
+import { CatalogVersionServicePort } from '@domain/ports/inbound/catalog-version-service.port';
+import { CatalogVersionRepositoryPort } from '@domain/ports/outbound/catalog-version-repository.port';
+import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';
 
 export class CatalogVersionService implements CatalogVersionServicePort {
   constructor(private readonly catalogVersionRepository: CatalogVersionRepositoryPort) {}

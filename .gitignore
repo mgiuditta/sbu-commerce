@@ -59,4 +59,4 @@ tmp/
 temp/
 
 # Auto-generated code (sbu generate)
-packages/types/src/generated/
+**/generated/

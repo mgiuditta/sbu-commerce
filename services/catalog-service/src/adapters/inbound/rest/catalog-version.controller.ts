@@ -14,8 +14,8 @@ import {
 import {
   CATALOG_VERSION_SERVICE_PORT,
   CatalogVersionServicePort,
-} from '../../../domain/ports/inbound/catalog-version-service.port';
-import { CreateCatalogVersionDto, UpdateCatalogVersionDto } from './dto/catalog-version.dto';
+} from '@domain/ports/inbound/catalog-version-service.port';
+import { CreateCatalogVersionDto, UpdateCatalogVersionDto } from './dto/generated/catalog-version.dto';
 
 @Controller('catalog-versions')
 export class CatalogVersionController {

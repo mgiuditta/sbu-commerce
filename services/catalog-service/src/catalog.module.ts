@@ -1,26 +1,26 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from './infrastructure/config/typeorm.config';
-import { ProductEntity } from './infrastructure/typeorm/product.entity';
-import { CategoryEntity } from './infrastructure/typeorm/category.entity';
-import { CatalogVersionEntity } from './infrastructure/typeorm/catalog-version.entity';
-import { ProductController } from './adapters/inbound/rest/product.controller';
-import { CategoryController } from './adapters/inbound/rest/category.controller';
-import { CatalogVersionController } from './adapters/inbound/rest/catalog-version.controller';
-import { ProductService } from './domain/services/product.service';
-import { CategoryService } from './domain/services/category.service';
-import { CatalogVersionService } from './domain/services/catalog-version.service';
-import { ProductTypeOrmAdapter } from './adapters/outbound/persistence/product.typeorm.adapter';
-import { CategoryTypeOrmAdapter } from './adapters/outbound/persistence/category.typeorm.adapter';
-import { CatalogVersionTypeOrmAdapter } from './adapters/outbound/persistence/catalog-version.typeorm.adapter';
-import { PRODUCT_SERVICE_PORT } from './domain/ports/inbound/product-service.port';
-import { PRODUCT_REPOSITORY_PORT } from './domain/ports/outbound/product-repository.port';
-import { CATEGORY_SERVICE_PORT } from './domain/ports/inbound/category-service.port';
-import { CATEGORY_REPOSITORY_PORT } from './domain/ports/outbound/category-repository.port';
-import { CATALOG_VERSION_SERVICE_PORT } from './domain/ports/inbound/catalog-version-service.port';
-import { CATALOG_VERSION_REPOSITORY_PORT } from './domain/ports/outbound/catalog-version-repository.port';
-import { DomainExceptionFilter } from './adapters/inbound/rest/filters/domain-exception.filter';
+import { typeOrmConfig } from '@infrastructure/config/typeorm.config';
+import { ProductEntity } from '@infrastructure/typeorm/generated/product.entity';
+import { CategoryEntity } from '@infrastructure/typeorm/generated/category.entity';
+import { CatalogVersionEntity } from '@infrastructure/typeorm/generated/catalog-version.entity';
+import { ProductController } from '@adapters/inbound/rest/product.controller';
+import { CategoryController } from '@adapters/inbound/rest/category.controller';
+import { CatalogVersionController } from '@adapters/inbound/rest/catalog-version.controller';
+import { ProductService } from '@domain/services/product.service';
+import { CategoryService } from '@domain/services/category.service';
+import { CatalogVersionService } from '@domain/services/catalog-version.service';
+import { ProductTypeOrmAdapter } from '@adapters/outbound/persistence/product.typeorm.adapter';
+import { CategoryTypeOrmAdapter } from '@adapters/outbound/persistence/category.typeorm.adapter';
+import { CatalogVersionTypeOrmAdapter } from '@adapters/outbound/persistence/catalog-version.typeorm.adapter';
+import { PRODUCT_SERVICE_PORT } from '@domain/ports/inbound/product-service.port';
+import { PRODUCT_REPOSITORY_PORT } from '@domain/ports/outbound/product-repository.port';
+import { CATEGORY_SERVICE_PORT } from '@domain/ports/inbound/category-service.port';
+import { CATEGORY_REPOSITORY_PORT } from '@domain/ports/outbound/category-repository.port';
+import { CATALOG_VERSION_SERVICE_PORT } from '@domain/ports/inbound/catalog-version-service.port';
+import { CATALOG_VERSION_REPOSITORY_PORT } from '@domain/ports/outbound/catalog-version-repository.port';
+import { DomainExceptionFilter } from '@adapters/inbound/rest/filters/domain-exception.filter';
 
 @Module({
   imports: [

@@ -1,7 +1,7 @@
-import { PriceList } from '../models/price-list.model';
-import { PriceListServicePort } from '../ports/inbound/price-list-service.port';
-import { PriceListRepositoryPort } from '../ports/outbound/price-list-repository.port';
-import { EntityNotFoundException } from '../exceptions/entity-not-found.exception';
+import { PriceList } from '@domain/models/generated/price-list.model';
+import { PriceListServicePort } from '@domain/ports/inbound/price-list-service.port';
+import { PriceListRepositoryPort } from '@domain/ports/outbound/price-list-repository.port';
+import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';
 
 export class PriceListService implements PriceListServicePort {
   constructor(private readonly priceListRepository: PriceListRepositoryPort) {}

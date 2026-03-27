@@ -1,4 +1,4 @@
-import { Category } from '../../models/category.model';
+import { Category } from '@domain/models/generated/category.model';
 
 export const CATEGORY_SERVICE_PORT = Symbol('CATEGORY_SERVICE_PORT');
 

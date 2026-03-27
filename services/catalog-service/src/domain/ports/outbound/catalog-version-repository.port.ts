@@ -1,4 +1,4 @@
-import { CatalogVersion } from '../../models/catalog-version.model';
+import { CatalogVersion } from '@domain/models/generated/catalog-version.model';
 
 export const CATALOG_VERSION_REPOSITORY_PORT = Symbol('CATALOG_VERSION_REPOSITORY_PORT');
 

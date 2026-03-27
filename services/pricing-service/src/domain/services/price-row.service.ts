@@ -1,7 +1,7 @@
-import { PriceRow } from '../models/price-row.model';
-import { PriceRowServicePort } from '../ports/inbound/price-row-service.port';
-import { PriceRowRepositoryPort } from '../ports/outbound/price-row-repository.port';
-import { EntityNotFoundException } from '../exceptions/entity-not-found.exception';
+import { PriceRow } from '@domain/models/generated/price-row.model';
+import { PriceRowServicePort } from '@domain/ports/inbound/price-row-service.port';
+import { PriceRowRepositoryPort } from '@domain/ports/outbound/price-row-repository.port';
+import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';
 
 export class PriceRowService implements PriceRowServicePort {
   constructor(private readonly priceRowRepository: PriceRowRepositoryPort) {}

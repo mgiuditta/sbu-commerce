@@ -106,7 +106,7 @@ export function generateTypeOrmEntity(
   // Enum imports
   if (enumImports.size > 0) {
     const sorted = Array.from(enumImports).sort();
-    lines.push(`import { ${sorted.join(', ')} } from '../../domain/models/enums';`);
+    lines.push(`import { ${sorted.join(', ')} } from '../../../domain/models/generated/enums';`);
   }
 
   // Related entity imports

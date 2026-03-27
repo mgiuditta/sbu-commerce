@@ -1,7 +1,7 @@
-import { Product } from '../models/product.model';
-import { ProductServicePort } from '../ports/inbound/product-service.port';
-import { ProductRepositoryPort } from '../ports/outbound/product-repository.port';
-import { EntityNotFoundException } from '../exceptions/entity-not-found.exception';
+import { Product } from '@domain/models/generated/product.model';
+import { ProductServicePort } from '@domain/ports/inbound/product-service.port';
+import { ProductRepositoryPort } from '@domain/ports/outbound/product-repository.port';
+import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';
 
 export class ProductService implements ProductServicePort {
   constructor(private readonly productRepository: ProductRepositoryPort) {}

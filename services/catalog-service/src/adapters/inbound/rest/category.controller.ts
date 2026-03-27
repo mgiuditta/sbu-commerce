@@ -14,8 +14,8 @@ import {
 import {
   CATEGORY_SERVICE_PORT,
   CategoryServicePort,
-} from '../../../domain/ports/inbound/category-service.port';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+} from '@domain/ports/inbound/category-service.port';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/generated/category.dto';
 
 @Controller('categories')
 export class CategoryController {

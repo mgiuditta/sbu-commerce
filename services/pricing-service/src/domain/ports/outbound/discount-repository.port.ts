@@ -1,4 +1,4 @@
-import { Discount } from '../../models/discount.model';
+import { Discount } from '@domain/models/generated/discount.model';
 
 export const DISCOUNT_REPOSITORY_PORT = Symbol('DISCOUNT_REPOSITORY_PORT');
 
