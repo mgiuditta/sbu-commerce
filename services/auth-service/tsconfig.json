@@ -9,6 +9,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {
+      "@/*": ["./src/*"],
       "@domain/*": ["./src/domain/*"],
       "@domain/models": ["./src/domain/models"],
       "@domain/models/*": ["./src/domain/models/*"],

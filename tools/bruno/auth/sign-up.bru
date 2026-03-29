@@ -1,0 +1,24 @@
+meta {
+  name: Sign Up
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{authUrl}}/authentication/sign-up
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@sbu.io",
+    "password": "SuperSecret123!"
+  }
+}
+
+tests {
+  test("should return 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

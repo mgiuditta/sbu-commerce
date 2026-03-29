@@ -1,0 +1,26 @@
+meta {
+  name: Me (Test Bearer Token)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{authUrl}}/authentication/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return user data", function() {
+    expect(res.getBody().sub).to.be.a('string');
+    expect(res.getBody().email).to.be.a('string');
+  });
+}

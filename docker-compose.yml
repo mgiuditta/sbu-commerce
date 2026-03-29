@@ -7,7 +7,7 @@ services:
       - '5432:5432'
     environment:
       POSTGRES_USER: sbu
-      POSTGRES_PASSWORD: sbu_secret
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: sbu_main
       POSTGRES_MULTIPLE_DATABASES: sbu_catalog,sbu_orders,sbu_cart,sbu_pricing,sbu_inventory,sbu_auth,sbu_cms,sbu_hotfolder
     volumes:

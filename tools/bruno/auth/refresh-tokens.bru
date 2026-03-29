@@ -1,0 +1,35 @@
+meta {
+  name: Refresh Tokens
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{authUrl}}/authentication/refresh-tokens
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refreshToken": "{{refreshToken}}"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return new tokens", function() {
+    expect(res.getBody().accessToken).to.be.a('string');
+    expect(res.getBody().refreshToken).to.be.a('string');
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("accessToken", res.getBody().accessToken);
+    bru.setVar("refreshToken", res.getBody().refreshToken);
+  }
+}

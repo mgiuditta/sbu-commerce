@@ -1,0 +1,117 @@
+{
+  "$schema": "../../packages/config/items-schema.json",
+  "extension": "auth",
+  "enumtypes": [
+    {
+      "code": "UserType",
+      "values": ["CUSTOMER", "EMPLOYEE", "ADMIN"]
+    },
+    {
+      "code": "UserStatus",
+      "values": ["ACTIVE", "INACTIVE", "BLOCKED", "PENDING_VERIFICATION"]
+    },
+    {
+      "code": "SocialProvider",
+      "values": ["GOOGLE", "GITHUB", "FACEBOOK", "APPLE", "MICROSOFT", "CUSTOM"]
+    }
+  ],
+  "itemtypes": [
+    {
+      "code": "UserAccount",
+      "extends": "GenericItem",
+      "table": "user_accounts",
+      "attributes": [
+        { "name": "uid", "type": "string", "unique": true, "required": true },
+        { "name": "email", "type": "string", "unique": true, "required": true },
+        { "name": "passwordHash", "type": "string" },
+        { "name": "displayName", "type": "string" },
+        { "name": "userType", "type": "UserType", "default": "CUSTOMER", "required": true },
+        { "name": "status", "type": "UserStatus", "default": "ACTIVE" },
+        { "name": "roles", "type": "map", "default": [] },
+        { "name": "permissions", "type": "map", "default": [] },
+        { "name": "emailVerified", "type": "boolean", "default": false },
+        { "name": "isTfaEnabled", "type": "boolean", "default": false },
+        { "name": "tfaSecret", "type": "string" },
+        { "name": "lastLoginAt", "type": "datetime" },
+        { "name": "loginCount", "type": "integer", "default": 0 },
+        { "name": "failedLoginAttempts", "type": "integer", "default": 0 },
+        { "name": "lockedUntil", "type": "datetime" }
+      ]
+    },
+    {
+      "code": "Employee",
+      "extends": "UserAccount",
+      "table": "employees",
+      "attributes": [
+        { "name": "firstName", "type": "string", "required": true },
+        { "name": "lastName", "type": "string", "required": true },
+        { "name": "department", "type": "string" },
+        { "name": "position", "type": "string" },
+        { "name": "phone", "type": "string" },
+        { "name": "avatar", "type": "string" }
+      ]
+    },
+    {
+      "code": "SocialIdentity",
+      "extends": "GenericItem",
+      "table": "social_identities",
+      "attributes": [
+        { "name": "provider", "type": "SocialProvider", "required": true },
+        { "name": "providerId", "type": "string", "required": true },
+        { "name": "email", "type": "string" },
+        { "name": "displayName", "type": "string" },
+        { "name": "avatarUrl", "type": "string" },
+        { "name": "rawProfile", "type": "map" },
+        { "name": "user", "type": "UserAccount", "relation": "many-to-one", "required": true },
+        { "name": "lastUsedAt", "type": "datetime" }
+      ]
+    },
+    {
+      "code": "RefreshToken",
+      "extends": "GenericItem",
+      "table": "refresh_tokens",
+      "attributes": [
+        { "name": "tokenHash", "type": "string", "required": true },
+        { "name": "user", "type": "UserAccount", "relation": "many-to-one", "required": true },
+        { "name": "expiresAt", "type": "datetime", "required": true },
+        { "name": "revoked", "type": "boolean", "default": false },
+        { "name": "revokedAt", "type": "datetime" },
+        { "name": "replacedByToken", "type": "string" },
+        { "name": "userAgent", "type": "string" },
+        { "name": "ipAddress", "type": "string" }
+      ]
+    },
+    {
+      "code": "ApiKey",
+      "extends": "GenericItem",
+      "table": "api_keys",
+      "attributes": [
+        { "name": "name", "type": "string", "required": true },
+        { "name": "keyHash", "type": "string", "required": true },
+        { "name": "keyPrefix", "type": "string", "required": true },
+        { "name": "user", "type": "UserAccount", "relation": "many-to-one", "required": true },
+        { "name": "scopes", "type": "map", "default": [] },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "expiresAt", "type": "datetime" },
+        { "name": "lastUsedAt", "type": "datetime" }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "code": "UserAccount2SocialIdentities",
+      "source": { "type": "UserAccount", "cardinality": "one" },
+      "target": { "type": "SocialIdentity", "cardinality": "many" }
+    },
+    {
+      "code": "UserAccount2RefreshTokens",
+      "source": { "type": "UserAccount", "cardinality": "one" },
+      "target": { "type": "RefreshToken", "cardinality": "many" }
+    },
+    {
+      "code": "UserAccount2ApiKeys",
+      "source": { "type": "UserAccount", "cardinality": "one" },
+      "target": { "type": "ApiKey", "cardinality": "many" }
+    }
+  ]
+}

@@ -70,6 +70,8 @@ export function generateDomainModel(
   // Import base class
   if (itemtype.extends === 'GenericItem') {
     lines.push(`import { GenericItem } from './generic-item.model';`);
+  } else if (itemtype.extends) {
+    lines.push(`import { ${itemtype.extends} } from './${toKebabCase(itemtype.extends)}.model';`);
   }
 
   // Import enums

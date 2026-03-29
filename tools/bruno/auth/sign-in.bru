@@ -1,0 +1,36 @@
+meta {
+  name: Sign In
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{authUrl}}/authentication/sign-in
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@sbu.io",
+    "password": "SuperSecret123!"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("should return tokens", function() {
+    expect(res.getBody().accessToken).to.be.a('string');
+    expect(res.getBody().refreshToken).to.be.a('string');
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("accessToken", res.getBody().accessToken);
+    bru.setVar("refreshToken", res.getBody().refreshToken);
+  }
+}

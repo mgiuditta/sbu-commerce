@@ -1,0 +1,7 @@
+{
+  "name": "auth",
+  "version": "0.0.1",
+  "description": "UserAccount, Employee, SocialIdentity, RefreshToken, ApiKey types",
+  "dependencies": ["core"],
+  "targetService": "auth-service"
+}
