@@ -72,24 +72,38 @@ export function generateTypeOrmEntity(
     }
   }
 
-  // Analyze relations — filter out types not in the available set
-  const relationsForType = getRelationsForType(itemtype.code, registry.relations)
+  // Analyze relations — filter out types not in the available set.
+  // For self-referential relations, expand into two entries (one per side).
+  const rawRelations = getRelationsForType(itemtype.code, registry.relations)
     .filter((rel) => {
       const otherType = rel.source.type === itemtype.code ? rel.target.type : rel.source.type;
       return !availableCodes || availableCodes.has(otherType);
     });
 
-  for (const rel of relationsForType) {
-    const isSource = rel.source.type === itemtype.code;
-    const mySide = isSource ? rel.source : rel.target;
-    const otherSide = isSource ? rel.target : rel.source;
-    const otherType = isSource ? rel.target.type : rel.source.type;
+  type RelationEntry = { rel: RelationDefinition; asSource: boolean };
+  const relationsForType: RelationEntry[] = [];
+  for (const rel of rawRelations) {
+    if (rel.source.type === itemtype.code && rel.target.type === itemtype.code) {
+      // Self-referential: process both sides
+      relationsForType.push({ rel, asSource: true });
+      relationsForType.push({ rel, asSource: false });
+    } else {
+      relationsForType.push({ rel, asSource: rel.source.type === itemtype.code });
+    }
+  }
 
-    entityImports.add(otherType);
+  for (const { rel, asSource } of relationsForType) {
+    const mySide = asSource ? rel.source : rel.target;
+    const otherSide = asSource ? rel.target : rel.source;
+    const otherType = asSource ? rel.target.type : rel.source.type;
+
+    if (otherType !== itemtype.code) {
+      entityImports.add(otherType);
+    }
 
     if (mySide.cardinality === 'many' && otherSide.cardinality === 'many') {
       typeormDecorators.add('ManyToMany');
-      if (isSource) {
+      if (asSource) {
         typeormDecorators.add('JoinTable');
       }
     } else if (mySide.cardinality === 'many' && otherSide.cardinality === 'one') {
@@ -195,8 +209,8 @@ export function generateTypeOrmEntity(
   }
 
   // Relation fields
-  for (const rel of relationsForType) {
-    const relLines = generateRelationField(itemtype.code, rel, registry);
+  for (const { rel, asSource } of relationsForType) {
+    const relLines = generateRelationField(itemtype.code, rel, registry, asSource);
     for (const line of relLines) {
       lines.push(line);
     }
@@ -244,17 +258,23 @@ function generateRelationField(
   typeName: string,
   rel: RelationDefinition,
   registry: TypeRegistry,
+  asSource?: boolean,
 ): string[] {
   const lines: string[] = [];
-  const isSource = rel.source.type === typeName;
+  const isSource = asSource ?? (rel.source.type === typeName);
   const mySide = isSource ? rel.source : rel.target;
   const otherSide = isSource ? rel.target : rel.source;
   const otherType = isSource ? rel.target.type : rel.source.type;
-  const fieldName = toCamelCase(otherType);
-  const pluralFieldName = pluralize(fieldName);
   const otherEntityName = `${otherType}Entity`;
-  const inverseFieldName = toCamelCase(typeName);
-  const inversePluralFieldName = pluralize(inverseFieldName);
+
+  // Attribute naming follows SAP Hybris convention:
+  // source.attribute = navigation field name on the TARGET pointing to source
+  // target.attribute = navigation field name on the SOURCE pointing to target
+  // So: my field = otherSide.attribute, inverse = mySide.attribute
+  const fieldName = otherSide.attribute ?? toCamelCase(otherType);
+  const pluralFieldName = otherSide.attribute ?? pluralize(toCamelCase(otherType));
+  const inverseFieldName = mySide.attribute ?? toCamelCase(typeName);
+  const inversePluralFieldName = mySide.attribute ?? pluralize(toCamelCase(typeName));
 
   if (mySide.cardinality === 'many' && otherSide.cardinality === 'many') {
     lines.push(

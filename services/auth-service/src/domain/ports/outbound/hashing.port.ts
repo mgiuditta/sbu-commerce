@@ -1,6 +1,6 @@
 export const HASHING_PORT = Symbol('HASHING_PORT');
 
-export interface HashingPort {
-  hash(data: string | Buffer): Promise<string>;
-  compare(data: string | Buffer, encrypted: string): Promise<boolean>;
+export abstract class HashingPort {
+  abstract hash(password: string): Promise<string>;
+  abstract compare(password: string, hash: string): Promise<boolean>;
 }

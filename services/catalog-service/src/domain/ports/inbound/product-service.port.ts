@@ -1,4 +1,4 @@
-import { Product } from '@domain/models/generated/product.model';
+import { Product } from '@ext/catalog/domain/models/generated/product.model';
 
 export const PRODUCT_SERVICE_PORT = Symbol('PRODUCT_SERVICE_PORT');
 

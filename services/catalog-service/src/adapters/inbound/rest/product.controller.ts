@@ -15,7 +15,7 @@ import {
   PRODUCT_SERVICE_PORT,
   ProductServicePort,
 } from '@domain/ports/inbound/product-service.port';
-import { CreateProductDto, UpdateProductDto } from './dto/generated/product.dto';
+import { CreateProductDto, UpdateProductDto } from '@ext/catalog/adapters/inbound/rest/dto/generated/product.dto';
 
 @Controller('products')
 export class ProductController {

@@ -1,4 +1,4 @@
-import { Product } from '@domain/models/generated/product.model';
+import { Product } from '@ext/catalog/domain/models/generated/product.model';
 import { ProductServicePort } from '@domain/ports/inbound/product-service.port';
 import { ProductRepositoryPort } from '@domain/ports/outbound/product-repository.port';
 import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';

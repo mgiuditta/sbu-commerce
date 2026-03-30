@@ -1,4 +1,4 @@
-import { PriceRow } from '@domain/models/generated/price-row.model';
+import { PriceRow } from '@ext/commerce/domain/models/generated/price-row.model';
 import { PriceRowServicePort } from '@domain/ports/inbound/price-row-service.port';
 import { PriceRowRepositoryPort } from '@domain/ports/outbound/price-row-repository.port';
 import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';

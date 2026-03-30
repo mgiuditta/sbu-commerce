@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PriceList } from '@domain/models/generated/price-list.model';
+import { PriceList } from '@ext/commerce/domain/models/generated/price-list.model';
 import { PriceListRepositoryPort } from '@domain/ports/outbound/price-list-repository.port';
-import { PriceListEntity } from '@infrastructure/typeorm/generated/price-list.entity';
-import { PriceListMapper } from './generated/price-list.mapper';
+import { PriceListEntity } from '@ext/commerce/infrastructure/typeorm/generated/price-list.entity';
+import { PriceListMapper } from '@ext/commerce/adapters/outbound/persistence/generated/price-list.mapper';
 
 @Injectable()
 export class PriceListTypeOrmAdapter implements PriceListRepositoryPort {

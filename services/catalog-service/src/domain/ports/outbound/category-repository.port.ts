@@ -1,4 +1,4 @@
-import { Category } from '@domain/models/generated/category.model';
+import { Category } from '@ext/catalog/domain/models/generated/category.model';
 
 export const CATEGORY_REPOSITORY_PORT = Symbol('CATEGORY_REPOSITORY_PORT');
 

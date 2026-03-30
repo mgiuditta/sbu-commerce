@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Discount } from '@domain/models/generated/discount.model';
+import { Discount } from '@ext/commerce/domain/models/generated/discount.model';
 import { DiscountRepositoryPort } from '@domain/ports/outbound/discount-repository.port';
-import { DiscountEntity } from '@infrastructure/typeorm/generated/discount.entity';
-import { DiscountMapper } from './generated/discount.mapper';
+import { DiscountEntity } from '@ext/commerce/infrastructure/typeorm/generated/discount.entity';
+import { DiscountMapper } from '@ext/commerce/adapters/outbound/persistence/generated/discount.mapper';
 
 @Injectable()
 export class DiscountTypeOrmAdapter implements DiscountRepositoryPort {

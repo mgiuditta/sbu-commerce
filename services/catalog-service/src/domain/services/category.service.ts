@@ -1,4 +1,4 @@
-import { Category } from '@domain/models/generated/category.model';
+import { Category } from '@ext/catalog/domain/models/generated/category.model';
 import { CategoryServicePort } from '@domain/ports/inbound/category-service.port';
 import { CategoryRepositoryPort } from '@domain/ports/outbound/category-repository.port';
 import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';

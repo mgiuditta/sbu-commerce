@@ -1,15 +1,14 @@
-import {Injectable} from '@nestjs/common';
-import {compare, genSalt, hash} from 'bcrypt';
-import {HashingPort} from '@domain/ports/outbound/hashing.port';
+import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { HashingPort } from '@domain/ports/outbound/hashing.port';
 
 @Injectable()
 export class BcryptAdapter implements HashingPort {
-  async hash(data: string | Buffer): Promise<string> {
-    const salt = await genSalt();
-    return hash(data, salt);
+  async hash(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
   }
 
-  compare(data: string | Buffer, encrypted: string): Promise<boolean> {
-    return compare(data, encrypted);
+  async compare(password: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(password, hash);
   }
 }

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Product } from '@domain/models/generated/product.model';
+import { Product } from '@ext/catalog/domain/models/generated/product.model';
 import { ProductRepositoryPort } from '@domain/ports/outbound/product-repository.port';
-import { ProductEntity } from '@infrastructure/typeorm/generated/product.entity';
-import { ProductMapper } from './generated/product.mapper';
+import { ProductEntity } from '@ext/catalog/infrastructure/typeorm/generated/product.entity';
+import { ProductMapper } from '@ext/catalog/adapters/outbound/persistence/generated/product.mapper';
 
 @Injectable()
 export class ProductTypeOrmAdapter implements ProductRepositoryPort {

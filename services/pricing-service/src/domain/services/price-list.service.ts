@@ -1,4 +1,4 @@
-import { PriceList } from '@domain/models/generated/price-list.model';
+import { PriceList } from '@ext/commerce/domain/models/generated/price-list.model';
 import { PriceListServicePort } from '@domain/ports/inbound/price-list-service.port';
 import { PriceListRepositoryPort } from '@domain/ports/outbound/price-list-repository.port';
 import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';

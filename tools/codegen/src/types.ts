@@ -36,6 +36,7 @@ export interface ItemTypeDefinition {
 export interface RelationSide {
   type: string;
   cardinality: 'one' | 'many';
+  attribute?: string;
 }
 
 export interface RelationDefinition {

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PriceRow } from '@domain/models/generated/price-row.model';
+import { PriceRow } from '@ext/commerce/domain/models/generated/price-row.model';
 import { PriceRowRepositoryPort } from '@domain/ports/outbound/price-row-repository.port';
-import { PriceRowEntity } from '@infrastructure/typeorm/generated/price-row.entity';
-import { PriceRowMapper } from './generated/price-row.mapper';
+import { PriceRowEntity } from '@ext/commerce/infrastructure/typeorm/generated/price-row.entity';
+import { PriceRowMapper } from '@ext/commerce/adapters/outbound/persistence/generated/price-row.mapper';
 
 @Injectable()
 export class PriceRowTypeOrmAdapter implements PriceRowRepositoryPort {

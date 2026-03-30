@@ -1,4 +1,4 @@
-import { CatalogVersion } from '@domain/models/generated/catalog-version.model';
+import { CatalogVersion } from '@ext/catalog/domain/models/generated/catalog-version.model';
 import { CatalogVersionServicePort } from '@domain/ports/inbound/catalog-version-service.port';
 import { CatalogVersionRepositoryPort } from '@domain/ports/outbound/catalog-version-repository.port';
 import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';

@@ -5,11 +5,11 @@ import {JwtModule} from '@nestjs/jwt';
 import {TypeOrmModule} from '@nestjs/typeorm';
 
 import jwtConfig from '@infrastructure/config/jwt.config';
-import {UserAccountEntity} from '@infrastructure/typeorm/generated/user-account.entity';
-import {EmployeeEntity} from '@infrastructure/typeorm/generated/employee.entity';
-import {SocialIdentityEntity} from '@infrastructure/typeorm/generated/social-identity.entity';
-import {RefreshTokenEntity} from '@infrastructure/typeorm/generated/refresh-token.entity';
-import {ApiKeyEntity} from '@infrastructure/typeorm/generated/api-key.entity';
+import {UserAccountEntity} from '@ext/auth/infrastructure/typeorm/generated/user-account.entity';
+import {EmployeeEntity} from '@ext/auth/infrastructure/typeorm/generated/employee.entity';
+import {SocialIdentityEntity} from '@ext/auth/infrastructure/typeorm/generated/social-identity.entity';
+import {RefreshTokenEntity} from '@ext/auth/infrastructure/typeorm/generated/refresh-token.entity';
+import {ApiKeyEntity} from '@ext/auth/infrastructure/typeorm/generated/api-key.entity';
 
 import {HASHING_PORT} from '@domain/ports/outbound/hashing.port';
 import {TOKEN_PORT} from '@domain/ports/outbound/token.port';

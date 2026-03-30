@@ -1,126 +1,104 @@
-import {randomUUID} from 'crypto';
-import {UserAccount} from '../models/generated';
-import {SocialProvider, UserStatus, UserType} from '../models/generated/enums';
-import {AuthenticationServicePort} from '../ports/inbound/authentication-service.port';
-import {HashingPort} from '../ports/outbound/hashing.port';
-import {RefreshTokenStoragePort} from '../ports/outbound/refresh-token-storage.port';
-import {TokenPair, TokenPort} from '../ports/outbound/token.port';
-import {UserAccountRepositoryPort} from '../ports/outbound/user-account-repository.port';
-import {InvalidCredentialsError, InvalidRefreshTokenError, UserAlreadyExistsError,} from '../exceptions';
+import { UserAccount } from '@ext/auth/domain/models/generated/user-account.model';
+import { UserType } from '@ext/auth/domain/models/generated/enums';
+import { AuthenticationServicePort } from '@domain/ports/inbound/authentication-service.port';
+import { UserAccountRepositoryPort } from '@domain/ports/outbound/user-account-repository.port';
+import { HashingPort } from '@domain/ports/outbound/hashing.port';
+import { TokenPort } from '@domain/ports/outbound/token.port';
+import { RefreshTokenStoragePort } from '@domain/ports/outbound/refresh-token-storage.port';
+import { v4 as uuidv4 } from 'uuid';
 
 export class AuthenticationService implements AuthenticationServicePort {
   constructor(
-    private readonly userAccountRepository: UserAccountRepositoryPort,
-    private readonly hashingService: HashingPort,
-    private readonly tokenService: TokenPort,
-    private readonly refreshTokenStorage: RefreshTokenStoragePort,
+    private readonly userRepo: UserAccountRepositoryPort,
+    private readonly hashing: HashingPort,
+    private readonly token: TokenPort,
+    private readonly refreshStorage: RefreshTokenStoragePort,
   ) {}
 
-  async signUp(email: string, password: string): Promise<void> {
-    const existing = await this.userAccountRepository.findByEmail(email);
+  async register(
+    email: string,
+    password: string,
+    displayName: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const existing = await this.userRepo.findByEmail(email);
     if (existing) {
-      throw new UserAlreadyExistsError();
+      throw new Error('User with this email already exists');
     }
-    const passwordHash = await this.hashingService.hash(password);
+
+    const passwordHash = await this.hashing.hash(password);
     const user = new UserAccount({
-      uid: randomUUID(),
+      uid: uuidv4(),
       email,
       passwordHash,
+      displayName,
       userType: UserType.CUSTOMER,
-      status: UserStatus.ACTIVE,
-      emailVerified: false,
-      loginCount: 0,
-      failedLoginAttempts: 0,
     });
-    await this.userAccountRepository.save(user);
+
+    const saved = await this.userRepo.save(user);
+    return this.generateTokens(saved);
   }
 
-  async signIn(email: string, password: string): Promise<TokenPair> {
-    const user = await this.userAccountRepository.findByEmail(email);
-    if (!user || !user.passwordHash) {
-      throw new InvalidCredentialsError();
-    }
-    const isEqual = await this.hashingService.compare(
-      password,
-      user.passwordHash,
-    );
-    if (!isEqual) {
-      throw new InvalidCredentialsError();
-    }
-    return this.generateTokens(user);
-  }
-
-  async generateTokens(user: UserAccount): Promise<TokenPair> {
-    const refreshTokenId = randomUUID();
-    const tokenPair = await this.tokenService.generateTokenPair(
-      user,
-      refreshTokenId,
-    );
-    await this.refreshTokenStorage.insert(user.id, refreshTokenId);
-    return tokenPair;
-  }
-
-  async refreshTokens(refreshToken: string): Promise<TokenPair> {
-    try {
-      const { sub, refreshTokenId } =
-        await this.tokenService.verifyRefreshToken(refreshToken);
-      const user = await this.userAccountRepository.findById(sub);
-      if (!user) {
-        throw new InvalidCredentialsError();
-      }
-      await this.refreshTokenStorage.validate(user.id, refreshTokenId);
-      await this.refreshTokenStorage.invalidate(user.id);
-      return this.generateTokens(user);
-    } catch (err) {
-      if (err instanceof InvalidRefreshTokenError) {
-        throw err;
-      }
-      throw new InvalidCredentialsError();
-    }
-  }
-
-  async socialSignIn(
-    provider: SocialProvider,
+  async login(
     email: string,
-    providerId: string,
-    displayName?: string,
-  ): Promise<TokenPair> {
-    let user = await this.userAccountRepository.findUserBySocialProvider(
-      provider,
-      providerId,
-    );
-    if (!user) {
-      user = new UserAccount({
-        uid: randomUUID(),
-        email,
-        displayName,
-        userType: UserType.CUSTOMER,
-        status: UserStatus.ACTIVE,
-        emailVerified: true,
-      });
-      user = await this.userAccountRepository.save(user);
-      await this.userAccountRepository.createSocialIdentity(
-        user.id,
-        provider,
-        providerId,
-        email,
-        displayName,
-      );
+    password: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const user = await this.userRepo.findByEmail(email);
+    if (!user || !user.passwordHash) {
+      throw new Error('Invalid credentials');
     }
+
+    const isValid = await this.hashing.compare(password, user.passwordHash);
+    if (!isValid) {
+      throw new Error('Invalid credentials');
+    }
+
     return this.generateTokens(user);
   }
 
-  async validateApiKey(
-    apiKeyId: string,
-    rawKey: string,
-  ): Promise<UserAccount | null> {
-    const result =
-      await this.userAccountRepository.findApiKeyWithUser(apiKeyId);
-    if (!result) return null;
-    const isValid = await this.hashingService.compare(
-      rawKey,
-      result.keyHash,
+  async refreshToken(
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const payload = await this.token.verifyToken(refreshToken);
+    const userId = payload.sub as string;
+
+    const isValid = await this.refreshStorage.validate(userId, refreshToken);
+    if (!isValid) {
+      throw new Error('Invalid refresh token');
+    }
+
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    await this.refreshStorage.revoke(userId);
+    return this.generateTokens(user);
+  }
+
+  async logout(userId: string): Promise<void> {
+    await this.refreshStorage.revoke(userId);
+  }
+
+  private async generateTokens(
+    user: UserAccount,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const payload: Record<string, unknown> = {
+      sub: user.id ?? user.uid,
+      email: user.email,
+      roles: user.roles,
+      permissions: user.permissions,
+    };
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.token.generateAccessToken(payload),
+      this.token.generateRefreshToken(payload),
+    ]);
+
+    await this.refreshStorage.store(
+      (user.id ?? user.uid) as string,
+      refreshToken,
     );
-    return isValid ? result.user : null;
+
+    return { accessToken, refreshToken };
   }
 }

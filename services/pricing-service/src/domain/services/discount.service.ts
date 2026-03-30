@@ -1,4 +1,4 @@
-import { Discount } from '@domain/models/generated/discount.model';
+import { Discount } from '@ext/commerce/domain/models/generated/discount.model';
 import { DiscountServicePort } from '@domain/ports/inbound/discount-service.port';
 import { DiscountRepositoryPort } from '@domain/ports/outbound/discount-repository.port';
 import { EntityNotFoundException } from '@domain/exceptions/entity-not-found.exception';

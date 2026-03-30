@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Category } from '@domain/models/generated/category.model';
+import { Category } from '@ext/catalog/domain/models/generated/category.model';
 import { CategoryRepositoryPort } from '@domain/ports/outbound/category-repository.port';
-import { CategoryEntity } from '@infrastructure/typeorm/generated/category.entity';
-import { CategoryMapper } from './generated/category.mapper';
+import { CategoryEntity } from '@ext/catalog/infrastructure/typeorm/generated/category.entity';
+import { CategoryMapper } from '@ext/catalog/adapters/outbound/persistence/generated/category.mapper';
 
 @Injectable()
 export class CategoryTypeOrmAdapter implements CategoryRepositoryPort {

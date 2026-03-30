@@ -4,7 +4,6 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "./src",
     "noEmit": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -17,9 +16,11 @@
       "@adapters/*": ["./src/adapters/*"],
       "@infrastructure/*": ["./src/infrastructure/*"],
       "@sbu/types": ["../../packages/types/src"],
-      "@sbu/types/*": ["../../packages/types/src/*"]
+      "@sbu/types/*": ["../../packages/types/src/*"],
+      "@ext/commerce/*": ["../../extensions/commerce/src/*"],
+      "@ext/core/*": ["../../extensions/core/src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../../extensions/commerce/src/**/*", "../../extensions/core/src/**/*"],
   "exclude": ["node_modules", "dist", "test"]
 }

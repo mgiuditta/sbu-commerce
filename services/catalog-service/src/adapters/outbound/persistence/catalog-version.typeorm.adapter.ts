@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CatalogVersion } from '@domain/models/generated/catalog-version.model';
+import { CatalogVersion } from '@ext/catalog/domain/models/generated/catalog-version.model';
 import { CatalogVersionRepositoryPort } from '@domain/ports/outbound/catalog-version-repository.port';
-import { CatalogVersionEntity } from '@infrastructure/typeorm/generated/catalog-version.entity';
-import { CatalogVersionMapper } from './generated/catalog-version.mapper';
+import { CatalogVersionEntity } from '@ext/catalog/infrastructure/typeorm/generated/catalog-version.entity';
+import { CatalogVersionMapper } from '@ext/catalog/adapters/outbound/persistence/generated/catalog-version.mapper';
 
 @Injectable()
 export class CatalogVersionTypeOrmAdapter implements CatalogVersionRepositoryPort {

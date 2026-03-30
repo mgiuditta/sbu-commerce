@@ -215,27 +215,8 @@ function resolveTargets(
 ): ResolvedTarget[] {
   const meta = readExtensionMeta(source.dirPath);
 
-  // Case 1: multi-target
-  if (meta.targetServices) {
-    return Object.entries(meta.targetServices).map(
-      ([serviceName, directCodes]) => {
-        const allCodes = resolveDependencies(directCodes, registry);
-        return buildResolvedTarget(serviceName, allCodes, registry, rootDir);
-      },
-    );
-  }
-
-  // Case 2: legacy single target
-  if (meta.targetService) {
-    const allCodes = (source.schema.itemtypes ?? []).map((it) => it.code);
-    // Also resolve dependencies for single target (pulls in base types like GenericItem)
-    const resolvedCodes = resolveDependencies(allCodes, registry);
-    return [
-      buildResolvedTarget(meta.targetService, resolvedCodes, registry, rootDir),
-    ];
-  }
-
-  // Case 3: no target — generate into extension directory
+  // Always generate into the extension directory itself.
+  // Services import from extensions via @ext/* tsconfig aliases.
   const allCodes = (source.schema.itemtypes ?? []).map((it) => it.code);
   return [
     buildResolvedTarget(null, allCodes, registry, rootDir, source.dirPath),

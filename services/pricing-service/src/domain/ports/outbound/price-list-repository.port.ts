@@ -1,4 +1,4 @@
-import { PriceList } from '@domain/models/generated/price-list.model';
+import { PriceList } from '@ext/commerce/domain/models/generated/price-list.model';
 
 export const PRICE_LIST_REPOSITORY_PORT = Symbol('PRICE_LIST_REPOSITORY_PORT');
 

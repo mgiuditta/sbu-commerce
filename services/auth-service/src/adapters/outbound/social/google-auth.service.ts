@@ -1,33 +1,29 @@
-import {Injectable, OnModuleInit} from '@nestjs/common';
-import {ConfigService} from '@nestjs/config';
-import {OAuth2Client} from 'google-auth-library';
+import { Injectable } from '@nestjs/common';
+import { OAuth2Client } from 'google-auth-library';
 
 @Injectable()
-export class GoogleAuthService implements OnModuleInit {
-  private oauthClient: OAuth2Client;
+export class GoogleAuthService {
+  private readonly client: OAuth2Client;
 
-  constructor(private readonly configService: ConfigService) {}
-
-  onModuleInit() {
-    const clientId = this.configService.get('GOOGLE_CLIENT_ID');
-    const clientSecret = this.configService.get('GOOGLE_CLIENT_SECRET');
-    this.oauthClient = new OAuth2Client(clientId, clientSecret);
+  constructor() {
+    this.client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
 
-  async verifyToken(
-    token: string,
-  ): Promise<{ email: string; providerId: string; displayName?: string }> {
-    const ticket = await this.oauthClient.verifyIdToken({
-      idToken: token,
+  async verifyGoogleToken(
+    idToken: string,
+  ): Promise<{ email: string; name: string; googleId: string }> {
+    const ticket = await this.client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
-    if (!payload?.email || !payload?.sub) {
-      throw new Error('Invalid Google token payload');
+    if (!payload) {
+      throw new Error('Invalid Google token');
     }
     return {
-      email: payload.email,
-      providerId: payload.sub,
-      displayName: payload.name,
+      email: payload.email!,
+      name: payload.name || '',
+      googleId: payload.sub,
     };
   }
 }
