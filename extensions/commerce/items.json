@@ -302,11 +302,28 @@
       ]
     },
     {
+      "code": "PriceList",
+      "extends": "GenericItem",
+      "table": "price_lists",
+      "attributes": [
+        { "name": "code", "type": "string", "unique": true, "required": true },
+        { "name": "name", "type": "LocalizedString", "required": true },
+        { "name": "description", "type": "LocalizedString" },
+        { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
+        { "name": "priority", "type": "integer", "default": 0 },
+        { "name": "active", "type": "boolean", "default": true },
+        { "name": "startDate", "type": "datetime" },
+        { "name": "endDate", "type": "datetime" },
+        { "name": "net", "type": "boolean", "default": true }
+      ]
+    },
+    {
       "code": "PriceRow",
       "extends": "GenericItem",
       "table": "price_rows",
       "attributes": [
         { "name": "product", "type": "string", "required": true },
+        { "name": "priceList", "type": "PriceList", "relation": "many-to-one" },
         { "name": "price", "type": "decimal", "required": true },
         { "name": "currency", "type": "Currency", "relation": "many-to-one", "required": true },
         { "name": "unit", "type": "Unit", "relation": "many-to-one" },
@@ -570,6 +587,11 @@
     }
   ],
   "relations": [
+    {
+      "code": "PriceList2PriceRows",
+      "source": { "type": "PriceList", "cardinality": "one" },
+      "target": { "type": "PriceRow", "cardinality": "many" }
+    },
     {
       "code": "Customer2Addresses",
       "source": { "type": "Customer", "cardinality": "one" },

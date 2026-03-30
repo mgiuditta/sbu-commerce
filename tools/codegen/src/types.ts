@@ -69,6 +69,39 @@ export interface GenerateOptions {
   extensions?: string[];
 }
 
+/**
+ * Metadata from extension.json.
+ */
+export interface ExtensionMeta {
+  name: string;
+  version: string;
+  description?: string;
+  dependencies?: string[];
+  /** Single-service target (legacy, backward compat) */
+  targetService?: string;
+  /** Multi-service target: maps service names to explicit itemtype codes */
+  targetServices?: Record<string, string[]>;
+}
+
+/**
+ * A resolved generation target — one service (or extension fallback)
+ * with all itemtypes, enums, and relations it needs.
+ */
+export interface ResolvedTarget {
+  /** Service name or 'local' for extension-local generation */
+  serviceName: string;
+  /** Absolute base directory for generated output */
+  baseDir: string;
+  /** All itemtype definitions (direct + transitive dependencies) */
+  itemtypes: ItemTypeDefinition[];
+  /** All enum definitions used by the itemtypes */
+  enums: EnumTypeDefinition[];
+  /** Relations where both sides are in the itemtype set */
+  relations: RelationDefinition[];
+  /** Set of itemtype codes for quick lookup */
+  itemtypeCodes: Set<string>;
+}
+
 export interface ParsedSource {
   filePath: string;
   dirPath: string;

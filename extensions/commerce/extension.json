@@ -2,5 +2,51 @@
   "name": "commerce",
   "version": "0.0.1",
   "description": "Cart, Checkout, Pricing extensions",
-  "dependencies": ["core"]
+  "dependencies": ["core"],
+  "targetServices": {
+    "pricing-service": [
+      "PriceRow",
+      "PriceList",
+      "Discount",
+      "Tax",
+      "TaxRow",
+      "Promotion",
+      "PromotionResult",
+      "CustomerGroup"
+    ],
+    "cart-service": [
+      "Cart",
+      "CartEntry",
+      "Customer",
+      "Address",
+      "Voucher",
+      "VoucherRedemption",
+      "PaymentInfo",
+      "PaymentMode",
+      "DeliveryMode",
+      "DeliveryCost"
+    ],
+    "order-service": [
+      "Order",
+      "OrderEntry",
+      "OrderHistoryEntry",
+      "Consignment",
+      "ConsignmentEntry",
+      "ReturnRequest",
+      "ReturnEntry",
+      "PaymentTransaction",
+      "Customer",
+      "Address",
+      "PaymentInfo",
+      "PaymentMode",
+      "DeliveryMode"
+    ],
+    "inventory-service": [
+      "Warehouse",
+      "StockLevel",
+      "StockReservation",
+      "PointOfService",
+      "Address"
+    ]
+  }
 }

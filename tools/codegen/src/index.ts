@@ -1,6 +1,9 @@
 /**
  * Codegen entry point — reads items.json and generates TypeORM entities,
  * domain models, mappers, DTOs, enums, and shared type interfaces.
+ *
+ * Supports multi-target: a single extension can generate code into
+ * multiple services via `targetServices` in extension.json.
  */
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
@@ -11,8 +14,11 @@ import type {
   ItemTypeDefinition,
   EnumTypeDefinition,
   TypeRegistry,
+  ExtensionMeta,
+  ResolvedTarget,
 } from './types.js';
 import { discoverItemsJsonFiles, buildTypeRegistry } from './parser.js';
+import { resolveDependencies } from './dependency-resolver.js';
 import { toKebabCase } from './utils.js';
 import {
   generateEnum,
@@ -51,12 +57,16 @@ export async function cleanGenerated(options: GenerateOptions): Promise<void> {
   console.log('[sbu-codegen] Cleaning generated files...');
 
   const sources = discoverItemsJsonFiles(rootDir);
+  const registry = buildTypeRegistry(sources);
   let removed = 0;
 
-  // Collect unique base dirs (extensions may target the same service)
+  // Collect unique base dirs (extensions may target multiple services)
   const baseDirs = new Set<string>();
   for (const source of sources) {
-    baseDirs.add(resolveBaseDir(source.dirPath, rootDir));
+    const targets = resolveTargets(source, registry, rootDir);
+    for (const target of targets) {
+      baseDirs.add(target.baseDir);
+    }
   }
 
   for (const baseDir of baseDirs) {
@@ -146,32 +156,31 @@ export async function generate(options: GenerateOptions): Promise<void> {
     `[sbu-codegen] Registry: ${registry.enums.size} enums, ${registry.itemtypes.size} itemtypes, ${registry.relations.length} relations.`,
   );
 
-  // 3. Determine which sources have content to generate
-  const sourcesWithContent = filteredSources.filter(
-    (s) =>
-      s.schema.enumtypes.length > 0 ||
-      s.schema.itemtypes.length > 0 ||
-      s.schema.relations.length > 0,
-  );
-
-  if (sourcesWithContent.length === 0) {
-    console.log('[sbu-codegen] No types to generate. Done.');
-    return;
-  }
-
-  // 4. Generate files per source
+  // 3. Resolve targets and generate
   const allFiles: GeneratedFile[] = [];
 
-  for (const source of sourcesWithContent) {
-    const files = generateForSource(source, registry, rootDir);
-    allFiles.push(...files);
+  for (const source of filteredSources) {
+    const { schema } = source;
+    if (
+      schema.enumtypes.length === 0 &&
+      schema.itemtypes.length === 0 &&
+      schema.relations.length === 0
+    ) {
+      continue;
+    }
+
+    const targets = resolveTargets(source, registry, rootDir);
+    for (const target of targets) {
+      const files = generateForTarget(target, registry);
+      allFiles.push(...files);
+    }
   }
 
-  // 5. Generate shared types for packages/types/src/generated/
+  // 4. Generate shared types for packages/types/src/generated/
   const sharedFiles = generateSharedTypes(registry, rootDir);
   allFiles.push(...sharedFiles);
 
-  // 6. Write all files
+  // 5. Write all files
   let written = 0;
   for (const file of allFiles) {
     ensureDir(file.filePath);
@@ -183,34 +192,130 @@ export async function generate(options: GenerateOptions): Promise<void> {
 }
 
 /**
- * Generate all files for a single extension source.
- * If the extension declares a `targetService` in extension.json,
- * generated code is placed into the corresponding service directory.
- * Otherwise it is generated into the extension directory itself.
+ * Read extension.json metadata from an extension directory.
  */
-function generateForSource(
+function readExtensionMeta(extensionDir: string): ExtensionMeta {
+  const p = join(extensionDir, 'extension.json');
+  if (!existsSync(p)) return { name: 'unknown', version: '0.0.0' };
+  return JSON.parse(readFileSync(p, 'utf-8'));
+}
+
+/**
+ * Resolve generation targets for a source.
+ *
+ * - `targetServices` (multi-target): one ResolvedTarget per service,
+ *   each with its direct itemtypes + transitive dependencies.
+ * - `targetService` (legacy single): all itemtypes → one service.
+ * - Neither: generate into the extension directory itself.
+ */
+function resolveTargets(
   source: ParsedSource,
   registry: TypeRegistry,
   rootDir: string,
+): ResolvedTarget[] {
+  const meta = readExtensionMeta(source.dirPath);
+
+  // Case 1: multi-target
+  if (meta.targetServices) {
+    return Object.entries(meta.targetServices).map(
+      ([serviceName, directCodes]) => {
+        const allCodes = resolveDependencies(directCodes, registry);
+        return buildResolvedTarget(serviceName, allCodes, registry, rootDir);
+      },
+    );
+  }
+
+  // Case 2: legacy single target
+  if (meta.targetService) {
+    const allCodes = (source.schema.itemtypes ?? []).map((it) => it.code);
+    // Also resolve dependencies for single target (pulls in base types like GenericItem)
+    const resolvedCodes = resolveDependencies(allCodes, registry);
+    return [
+      buildResolvedTarget(meta.targetService, resolvedCodes, registry, rootDir),
+    ];
+  }
+
+  // Case 3: no target — generate into extension directory
+  const allCodes = (source.schema.itemtypes ?? []).map((it) => it.code);
+  return [
+    buildResolvedTarget(null, allCodes, registry, rootDir, source.dirPath),
+  ];
+}
+
+/**
+ * Build a ResolvedTarget from a list of itemtype codes.
+ */
+function buildResolvedTarget(
+  serviceName: string | null,
+  itemtypeCodes: string[],
+  registry: TypeRegistry,
+  rootDir: string,
+  fallbackDir?: string,
+): ResolvedTarget {
+  const baseDir = serviceName
+    ? join(rootDir, 'services', serviceName)
+    : fallbackDir!;
+
+  const codeSet = new Set(itemtypeCodes);
+
+  const itemtypes = itemtypeCodes
+    .map((code) => registry.itemtypes.get(code))
+    .filter(Boolean) as ItemTypeDefinition[];
+
+  // Collect enums used by these itemtypes
+  const enumCodes = new Set<string>();
+  for (const it of itemtypes) {
+    for (const attr of it.attributes) {
+      if (registry.enums.has(attr.type)) {
+        enumCodes.add(attr.type);
+      }
+    }
+  }
+  const enums = Array.from(enumCodes)
+    .map((code) => registry.enums.get(code))
+    .filter(Boolean) as EnumTypeDefinition[];
+
+  // Filter relations: include only those where BOTH sides are in the itemtype set
+  const relations = registry.relations.filter(
+    (r) => codeSet.has(r.source.type) && codeSet.has(r.target.type),
+  );
+
+  return {
+    serviceName: serviceName ?? 'local',
+    baseDir,
+    itemtypes,
+    enums,
+    relations,
+    itemtypeCodes: codeSet,
+  };
+}
+
+/**
+ * Generate all files for a resolved target (a service or extension directory).
+ */
+function generateForTarget(
+  target: ResolvedTarget,
+  registry: TypeRegistry,
 ): GeneratedFile[] {
   const files: GeneratedFile[] = [];
-  const baseDir = resolveBaseDir(source.dirPath, rootDir);
-  const { schema } = source;
+  const { baseDir, itemtypes, enums: enumDefs } = target;
 
-  const enumDefs = schema.enumtypes ?? [];
-  const itemtypes = (schema.itemtypes ?? []).map((it) => ({
-    ...it,
-    extends:
-      it.extends ?? (it.code === 'GenericItem' ? undefined : 'GenericItem'),
-  }));
-  const hasGenericItemExtender = itemtypes.some(
+  // Normalize itemtypes: default extends to GenericItem, exclude GenericItem itself
+  // GenericItem is handled separately via the hasGenericItemExtender path
+  const normalizedItemtypes = itemtypes
+    .filter((it) => it.code !== 'GenericItem')
+    .map((it) => ({
+      ...it,
+      extends: it.extends ?? 'GenericItem',
+    }));
+
+  const hasGenericItemExtender = normalizedItemtypes.some(
     (it) => it.extends === 'GenericItem',
   );
 
   // === Enums (shared between domain models and infrastructure) ===
+  const enumsDir = join(baseDir, 'src', 'domain', 'models', 'generated', 'enums');
   if (enumDefs.length > 0) {
-    const enumsDir = join(baseDir, 'src', 'domain', 'models', 'generated', 'enums');
-
     for (const enumDef of enumDefs) {
       const fileName = `${toKebabCase(enumDef.code)}.enum.ts`;
       files.push({
@@ -219,14 +324,12 @@ function generateForSource(
       });
     }
 
-    // Enums barrel
     files.push({
       filePath: join(enumsDir, 'index.ts'),
       content: generateEnumBarrel(enumDefs, (code) => `${toKebabCase(code)}.enum`),
     });
   } else {
     // Create empty enums barrel so imports don't break
-    const enumsDir = join(baseDir, 'src', 'domain', 'models', 'generated', 'enums');
     files.push({
       filePath: join(enumsDir, 'index.ts'),
       content: '// AUTO-GENERATED — DO NOT EDIT\n// No enums defined.\n',
@@ -234,10 +337,9 @@ function generateForSource(
   }
 
   // === Domain Models ===
-  if (itemtypes.length > 0) {
+  if (normalizedItemtypes.length > 0) {
     const modelsDir = join(baseDir, 'src', 'domain', 'models', 'generated');
 
-    // GenericItem base model if any itemtype extends it
     if (hasGenericItemExtender) {
       files.push({
         filePath: join(modelsDir, 'generic-item.model.ts'),
@@ -245,26 +347,24 @@ function generateForSource(
       });
     }
 
-    for (const itemtype of itemtypes) {
+    for (const itemtype of normalizedItemtypes) {
       const fileName = `${toKebabCase(itemtype.code)}.model.ts`;
       files.push({
         filePath: join(modelsDir, fileName),
-        content: generateDomainModel(itemtype, registry),
+        content: generateDomainModel(itemtype, registry, target.itemtypeCodes),
       });
     }
 
-    // Models barrel
     files.push({
       filePath: join(modelsDir, 'index.ts'),
-      content: generateDomainModelBarrel(itemtypes, hasGenericItemExtender),
+      content: generateDomainModelBarrel(normalizedItemtypes, hasGenericItemExtender),
     });
   }
 
   // === TypeORM Entities ===
-  if (itemtypes.length > 0) {
+  if (normalizedItemtypes.length > 0) {
     const entitiesDir = join(baseDir, 'src', 'infrastructure', 'typeorm', 'generated');
 
-    // GenericItemEntity base
     if (hasGenericItemExtender) {
       files.push({
         filePath: join(entitiesDir, 'generic-item.entity.ts'),
@@ -272,23 +372,22 @@ function generateForSource(
       });
     }
 
-    for (const itemtype of itemtypes) {
+    for (const itemtype of normalizedItemtypes) {
       const fileName = `${toKebabCase(itemtype.code)}.entity.ts`;
       files.push({
         filePath: join(entitiesDir, fileName),
-        content: generateTypeOrmEntity(itemtype, registry),
+        content: generateTypeOrmEntity(itemtype, registry, target.itemtypeCodes),
       });
     }
 
-    // Entities barrel
     files.push({
       filePath: join(entitiesDir, 'index.ts'),
-      content: generateEntityBarrel(itemtypes, hasGenericItemExtender),
+      content: generateEntityBarrel(normalizedItemtypes, hasGenericItemExtender),
     });
   }
 
   // === Mappers ===
-  if (itemtypes.length > 0) {
+  if (normalizedItemtypes.length > 0) {
     const mappersDir = join(
       baseDir,
       'src',
@@ -298,7 +397,7 @@ function generateForSource(
       'generated',
     );
 
-    for (const itemtype of itemtypes) {
+    for (const itemtype of normalizedItemtypes) {
       const fileName = `${toKebabCase(itemtype.code)}.mapper.ts`;
       files.push({
         filePath: join(mappersDir, fileName),
@@ -306,15 +405,14 @@ function generateForSource(
       });
     }
 
-    // Mappers barrel
     files.push({
       filePath: join(mappersDir, 'index.ts'),
-      content: generateMapperBarrel(itemtypes),
+      content: generateMapperBarrel(normalizedItemtypes),
     });
   }
 
   // === DTOs ===
-  if (itemtypes.length > 0) {
+  if (normalizedItemtypes.length > 0) {
     const dtosDir = join(
       baseDir,
       'src',
@@ -325,7 +423,7 @@ function generateForSource(
       'generated',
     );
 
-    for (const itemtype of itemtypes) {
+    for (const itemtype of normalizedItemtypes) {
       const fileName = `${toKebabCase(itemtype.code)}.dto.ts`;
       files.push({
         filePath: join(dtosDir, fileName),
@@ -333,10 +431,9 @@ function generateForSource(
       });
     }
 
-    // DTOs barrel
     files.push({
       filePath: join(dtosDir, 'index.ts'),
-      content: generateDtoBarrel(itemtypes),
+      content: generateDtoBarrel(normalizedItemtypes),
     });
   }
 
@@ -395,22 +492,6 @@ function generateSharedTypes(
   });
 
   return files;
-}
-
-/**
- * Resolve the base directory for code generation.
- * If the extension declares a `targetService` in extension.json,
- * output goes to `services/<targetService>/`. Otherwise stays in the extension dir.
- */
-function resolveBaseDir(extensionDir: string, rootDir: string): string {
-  const extensionJsonPath = join(extensionDir, 'extension.json');
-  if (existsSync(extensionJsonPath)) {
-    const meta = JSON.parse(readFileSync(extensionJsonPath, 'utf-8'));
-    if (meta.targetService) {
-      return join(rootDir, 'services', meta.targetService);
-    }
-  }
-  return extensionDir;
 }
 
 /**

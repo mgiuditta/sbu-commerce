@@ -35,10 +35,13 @@ export function generateGenericItemModel(): string {
 
 /**
  * Generate a domain model class for an itemtype.
+ * When `availableCodes` is provided, relations/imports for types
+ * outside the set are skipped (multi-target safety).
  */
 export function generateDomainModel(
   itemtype: ItemTypeDefinition,
   registry: TypeRegistry,
+  availableCodes?: Set<string>,
 ): string {
   const lines: string[] = [HEADER];
   const enumCodes = new Set(registry.enums.keys());
@@ -54,7 +57,12 @@ export function generateDomainModel(
       enumImports.add(attr.type);
     }
     if (mapping.isRelation) {
-      modelImports.add(attr.type);
+      // Skip relation if the target type is not in the available set
+      if (availableCodes && !availableCodes.has(attr.type)) continue;
+      // Skip self-references (e.g. Language.fallback → Language)
+      if (attr.type !== itemtype.code) {
+        modelImports.add(attr.type);
+      }
     }
   }
 
@@ -63,6 +71,8 @@ export function generateDomainModel(
   for (const rel of relationsForType) {
     const otherType = rel.source.type === itemtype.code ? rel.target.type : rel.source.type;
     if (otherType !== itemtype.code) {
+      // Skip if the other type is not available in this target
+      if (availableCodes && !availableCodes.has(otherType)) continue;
       modelImports.add(otherType);
     }
   }
@@ -93,18 +103,30 @@ export function generateDomainModel(
   const extendsClause = itemtype.extends ? ` extends ${itemtype.extends}` : '';
   lines.push(`export class ${itemtype.code}${extendsClause} {`);
 
+  // Track emitted field names to avoid duplicates (attribute vs relation)
+  const emittedFields = new Set<string>();
+
   // Attribute fields
   for (const attr of itemtype.attributes) {
     const mapping = resolveType(attr.type, enumCodes, itemtypeCodes);
+    // Skip relation attributes whose target type is unavailable
+    if (mapping.isRelation && availableCodes && !availableCodes.has(attr.type)) continue;
     const isRequired = attr.required === true;
     const optional = isRequired ? '' : '?';
     lines.push(`  ${attr.name}${optional}: ${mapping.tsType};`);
+    emittedFields.add(attr.name);
   }
 
-  // Relation fields
+  // Relation fields (skip if already emitted as an attribute)
   for (const rel of relationsForType) {
+    const otherType = rel.source.type === itemtype.code ? rel.target.type : rel.source.type;
+    if (availableCodes && !availableCodes.has(otherType)) continue;
     const field = getRelationField(itemtype.code, rel, registry);
     if (field) {
+      // Extract field name from "fieldName?: Type;" pattern
+      const fieldName = field.split(/[?:]/)[0]!.trim();
+      if (emittedFields.has(fieldName)) continue;
+      emittedFields.add(fieldName);
       lines.push(`  ${field}`);
     }
   }

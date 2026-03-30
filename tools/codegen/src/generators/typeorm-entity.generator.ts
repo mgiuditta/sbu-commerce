@@ -40,10 +40,13 @@ export function generateGenericItemEntity(): string {
 
 /**
  * Generate a TypeORM entity class for an itemtype.
+ * When `availableCodes` is provided, relations/imports for types
+ * outside the set are skipped (multi-target safety).
  */
 export function generateTypeOrmEntity(
   itemtype: ItemTypeDefinition,
   registry: TypeRegistry,
+  availableCodes?: Set<string>,
 ): string {
   const lines: string[] = [HEADER];
   const enumCodes = new Set(registry.enums.keys());
@@ -69,8 +72,13 @@ export function generateTypeOrmEntity(
     }
   }
 
-  // Analyze relations
-  const relationsForType = getRelationsForType(itemtype.code, registry.relations);
+  // Analyze relations — filter out types not in the available set
+  const relationsForType = getRelationsForType(itemtype.code, registry.relations)
+    .filter((rel) => {
+      const otherType = rel.source.type === itemtype.code ? rel.target.type : rel.source.type;
+      return !availableCodes || availableCodes.has(otherType);
+    });
+
   for (const rel of relationsForType) {
     const isSource = rel.source.type === itemtype.code;
     const mySide = isSource ? rel.source : rel.target;

@@ -6,7 +6,9 @@ import {TypeOrmModule} from '@nestjs/typeorm';
 
 import jwtConfig from '@infrastructure/config/jwt.config';
 import {UserAccountEntity} from '@infrastructure/typeorm/generated/user-account.entity';
+import {EmployeeEntity} from '@infrastructure/typeorm/generated/employee.entity';
 import {SocialIdentityEntity} from '@infrastructure/typeorm/generated/social-identity.entity';
+import {RefreshTokenEntity} from '@infrastructure/typeorm/generated/refresh-token.entity';
 import {ApiKeyEntity} from '@infrastructure/typeorm/generated/api-key.entity';
 
 import {HASHING_PORT} from '@domain/ports/outbound/hashing.port';
@@ -45,7 +47,9 @@ import {PermissionsGuard} from '@adapters/inbound/rest/guards/permissions.guard'
     }),
     TypeOrmModule.forFeature([
       UserAccountEntity,
+      EmployeeEntity,
       SocialIdentityEntity,
+      RefreshTokenEntity,
       ApiKeyEntity,
     ]),
     JwtModule.registerAsync(jwtConfig.asProvider()),

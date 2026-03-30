@@ -24,7 +24,7 @@ export class PriceRowTypeOrmAdapter implements PriceRowRepositoryPort {
   }
 
   async findByProductCode(productCode: string): Promise<PriceRow[]> {
-    const entities = await this.repo.find({ where: { productCode } });
+    const entities = await this.repo.find({ where: { product: productCode } });
     return entities.map(PriceRowMapper.toDomain);
   }
 
